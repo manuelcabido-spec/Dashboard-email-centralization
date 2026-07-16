@@ -130,7 +130,9 @@ A partir de ahí todo es automático: cuando un dealer responde con el documento
 
 **¿Puedo editar el Sheet a mano?** Sí. El dashboard y el Sheet siempre están sincronizados porque el Sheet *es* la base de datos.
 
-**¿Procesa correos antiguos?** Escanea los últimos 7 días. Los hilos ya procesados quedan marcados con la etiqueta de Gmail `DealerTracker/Procesado` y no se repiten.
+**¿Procesa correos antiguos?** Escanea los últimos 30 días (configurable con `DIAS_BUSQUEDA` en la hoja `Config`). Los hilos ya procesados quedan marcados con la etiqueta de Gmail `DealerTracker/Procesado` y no se repiten.
+
+**Importante: el orden correcto es Dealers → Campaña → Escanear.** El escáner solo registra correos de remitentes que estén en la hoja `Dealers`, y solo actualiza estados si existe una campaña con ese documento. Si escaneas antes de crear la campaña, esos hilos quedan marcados como procesados y no se reasignarán después.
 
 **He actualizado el código, ¿y ahora?** Pega el nuevo `Code.gs`/`Dashboard.html` en el editor, guarda, ejecuta `setup()` una vez (migra lo que haga falta) y en **Implementar → Administrar implementaciones** edita la implementación y selecciona *"Nueva versión"* para que la URL sirva el código nuevo.
 

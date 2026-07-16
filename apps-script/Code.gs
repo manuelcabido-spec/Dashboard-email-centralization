@@ -125,8 +125,9 @@ function crearHojaConfig_(ss) {
   if (!r.nueva) return;
   var hoja = r.hoja;
   hoja.getRange('A1:B1').setValues([['Parámetro', 'Valor']]).setFontWeight('bold').setBackground('#1a73e8').setFontColor('white');
-  hoja.getRange('A2:B6').setValues([
+  hoja.getRange('A2:B7').setValues([
     ['DIAS_PARA_SEGUIMIENTO', 5],
+    ['DIAS_BUSQUEDA', 30],
     ['CARPETA_DRIVE_ID', ''],
     ['NOMBRE_CARPETA_DRIVE', 'Dealer Docs'],
     ['ASUNTO_SOLICITUD', 'Solicitud de documentación - {{DOCUMENTOS}}'],
@@ -363,32 +364,46 @@ function procesarCorreos() {
     var etiquetaProcesado = obtenerOCrearEtiqueta_(ETIQUETA_PROCESADO);
     var etiquetaRevisar = obtenerOCrearEtiqueta_(ETIQUETA_REVISAR);
 
-    // Correos recibidos en los últimos 7 días que aún no hemos procesado
-    // (las etiquetas anidadas se buscan con guiones: DealerTracker/Procesado -> dealertracker-procesado)
-    var consulta = 'in:inbox newer_than:7d -label:' + ETIQUETA_PROCESADO.toLowerCase().replace(/\//g, '-');
-    var hilos = GmailApp.search(consulta, 0, 50);
+    var todosEmails = Object.keys(mapaEmailDealer);
+    if (!todosEmails.length) {
+      Logger.log('La hoja Dealers está vacía: no hay remitentes que buscar.');
+      return;
+    }
 
+    // Buscamos directamente por remitente (en bloques, Gmail limita la longitud
+    // de la consulta) dentro de la ventana configurada. Los hilos ya procesados
+    // quedan excluidos por la etiqueta (anidada: se busca con guiones).
+    var dias = Number(getConfig_('DIAS_BUSQUEDA')) || 30;
+    var sinProcesar = '-label:' + ETIQUETA_PROCESADO.toLowerCase().replace(/\//g, '-');
     var idsRegistrados = mensajesYaRegistrados_();
 
-    hilos.forEach(function (hilo) {
-      var esDeDealer = false;
-      hilo.getMessages().forEach(function (msg) {
-        var remitente = extraerEmail_(msg.getFrom());
-        var dealer = mapaEmailDealer[remitente];
-        if (!dealer) return;                       // no es un dealer conocido
-        if (idsRegistrados[msg.getId()]) return;   // ya registrado
-        esDeDealer = true;
+    for (var i = 0; i < todosEmails.length; i += 15) {
+      var bloque = todosEmails.slice(i, i + 15);
+      var consulta = 'newer_than:' + dias + 'd ' + sinProcesar +
+                     ' from:(' + bloque.join(' OR ') + ')';
+      var hilos = GmailApp.search(consulta, 0, 100);
 
-        var docDetectado = clasificarDocumento_(msg, tiposDoc);
-        var archivos = guardarAdjuntos_(msg, dealer);
-        registrarCorreo_(msg, dealer, docDetectado, archivos);
-        actualizarSolicitud_(dealer, docDetectado, msg, archivos);
+      hilos.forEach(function (hilo) {
+        var esDeDealer = false;
+        hilo.getMessages().forEach(function (msg) {
+          var remitente = extraerEmail_(msg.getFrom());
+          var dealer = mapaEmailDealer[remitente];
+          if (!dealer) return;                       // no es un dealer conocido
+          if (idsRegistrados[msg.getId()]) return;   // ya registrado
+          idsRegistrados[msg.getId()] = true;
+          esDeDealer = true;
+
+          var docDetectado = clasificarDocumento_(msg, tiposDoc);
+          var archivos = guardarAdjuntos_(msg, dealer);
+          registrarCorreo_(msg, dealer, docDetectado, archivos);
+          actualizarSolicitud_(dealer, docDetectado, msg, archivos);
+        });
+        if (esDeDealer) {
+          hilo.addLabel(etiquetaProcesado);
+          hilo.addLabel(etiquetaRevisar);
+        }
       });
-      if (esDeDealer) {
-        hilo.addLabel(etiquetaProcesado);
-        hilo.addLabel(etiquetaRevisar);
-      }
-    });
+    }
 
     actualizarSeguimientos();
   } finally {
