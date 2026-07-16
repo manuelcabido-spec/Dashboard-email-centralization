@@ -3,14 +3,19 @@
  *  DEALER DOCUMENT TRACKER
  *  Centraliza correos de dealers, clasifica documentos,
  *  guarda adjuntos en Drive y actualiza Google Sheets.
+ *  Organizado por CAMPAÑAS: cada casuística (p. ej. "Contratos
+ *  de seguro - Jul 2026") es una campaña con su documento, sus
+ *  dealers y su progreso.
  *  Dashboard web incluido (ver Dashboard.html).
  * ============================================================
  *
  *  PRIMEROS PASOS (ver README.md del repositorio):
  *   1. Ejecuta setup() una vez y autoriza los permisos.
+ *      (setup() es seguro de re-ejecutar: migra sin borrar datos)
  *   2. Ejecuta instalarTriggers() para la automatización.
  *   3. Implementar > Nueva implementación > Aplicación web
  *      para obtener la URL del dashboard.
+ *   4. Crea tu primera campaña desde el dashboard (➕ Nueva campaña).
  */
 
 // ------------------------------------------------------------
@@ -19,6 +24,7 @@
 
 var HOJAS = {
   DEALERS: 'Dealers',
+  CAMPANAS: 'Campañas',
   SOLICITUDES: 'Solicitudes',
   CORREOS: 'Correos',
   CONFIG: 'Config'
@@ -32,6 +38,9 @@ var ESTADOS = {
   INCORRECTO: 'Incorrecto - Reenviar'     // enviaron algo mal, hay que pedirlo de nuevo
 };
 
+var ESTADOS_CAMPANA = { ACTIVA: 'Activa', CERRADA: 'Cerrada' };
+var SIN_CAMPANA = '(sin campaña)';
+
 var ESTADOS_CORREO = {
   NUEVO: 'Nuevo',
   RESPONDER: 'Responder',
@@ -43,9 +52,14 @@ var ETIQUETA_REVISAR = 'DealerTracker/Revisar';
 
 // Columnas (1-indexadas) de la hoja Solicitudes
 var COL_SOL = {
-  ID: 1, DEALER: 2, DOCUMENTO: 3, ESTADO: 4, FECHA_SOLICITUD: 5,
-  ULTIMO_CONTACTO: 6, FECHA_RECIBIDO: 7, ARCHIVO: 8,
-  DIAS_SIN_RESPUESTA: 9, SEGUIMIENTO: 10, NOTAS: 11
+  ID: 1, DEALER: 2, DOCUMENTO: 3, CAMPANA: 4, ESTADO: 5, FECHA_SOLICITUD: 6,
+  ULTIMO_CONTACTO: 7, FECHA_RECIBIDO: 8, ARCHIVO: 9,
+  DIAS_SIN_RESPUESTA: 10, SEGUIMIENTO: 11, NOTAS: 12
+};
+
+// Columnas de la hoja Campañas
+var COL_CAM = {
+  ID: 1, NOMBRE: 2, DOCUMENTO: 3, FECHA: 4, ESTADO: 5, N_DEALERS: 6, NOTAS: 7
 };
 
 // Columnas de la hoja Correos
@@ -55,42 +69,61 @@ var COL_COR = {
 };
 
 // ------------------------------------------------------------
-// SETUP INICIAL
+// SETUP INICIAL (re-ejecutable: no borra datos existentes)
 // ------------------------------------------------------------
 
-/** Crea todas las hojas, formatos, etiquetas de Gmail y carpeta de Drive. */
+/** Crea/migra las hojas, formatos, etiquetas de Gmail y carpeta de Drive. */
 function setup() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   if (!ss) throw new Error('Abre el script desde Extensiones > Apps Script dentro de un Google Sheet.');
 
   crearHojaConfig_(ss);
   crearHojaDealers_(ss);
+  crearHojaCampanas_(ss);
   crearHojaSolicitudes_(ss);
   crearHojaCorreos_(ss);
+  migrarEsquema_(ss);
 
   // Etiquetas de Gmail
   obtenerOCrearEtiqueta_(ETIQUETA_PROCESADO);
   obtenerOCrearEtiqueta_(ETIQUETA_REVISAR);
 
   // Carpeta raíz en Drive para los documentos
-  var carpeta = obtenerOCrearCarpetaRaiz_();
-  setConfig_('CARPETA_DRIVE_ID', carpeta.getId());
+  if (!getConfig_('CARPETA_DRIVE_ID')) {
+    setConfig_('CARPETA_DRIVE_ID', obtenerOCrearCarpetaRaiz_().getId());
+  }
 
   var hojaDefecto = ss.getSheetByName('Hoja 1') || ss.getSheetByName('Sheet1');
-  if (hojaDefecto && ss.getSheets().length > 4) ss.deleteSheet(hojaDefecto);
+  if (hojaDefecto && ss.getSheets().length > 5) ss.deleteSheet(hojaDefecto);
 
-  SpreadsheetApp.getUi().alert(
-    'Setup completado ✔\n\n' +
-    '1) Rellena la hoja "Dealers" con tus dealers y sus emails.\n' +
-    '2) Revisa los tipos de documento en la hoja "Config".\n' +
-    '3) Ejecuta generarSolicitudes() para crear la matriz dealer x documento.\n' +
-    '4) Ejecuta instalarTriggers() para activar la automatización.'
-  );
+  try {
+    SpreadsheetApp.getUi().alert(
+      'Setup completado ✔\n\n' +
+      '1) Rellena la hoja "Dealers" con tus dealers y sus emails.\n' +
+      '2) Ejecuta instalarTriggers() para activar la automatización.\n' +
+      '3) Publica la aplicación web y crea tu primera campaña desde el dashboard.'
+    );
+  } catch (e) { /* sin UI (ejecución desde trigger/editor sin sheet abierto) */ }
+}
+
+/** Inicializa una hoja solo si es nueva o está vacía. Devuelve {hoja, nueva}. */
+function hojaInicializable_(ss, nombre) {
+  var hoja = ss.getSheetByName(nombre);
+  if (hoja && hoja.getLastRow() > 1) return { hoja: hoja, nueva: false }; // ya tiene datos: no tocar
+  if (!hoja) hoja = ss.insertSheet(nombre);
+  return { hoja: hoja, nueva: true };
+}
+
+function cabecera_(hoja, columnas) {
+  hoja.getRange(1, 1, 1, columnas.length).setValues([columnas])
+      .setFontWeight('bold').setBackground('#1a73e8').setFontColor('white');
+  hoja.setFrozenRows(1);
 }
 
 function crearHojaConfig_(ss) {
-  var hoja = ss.getSheetByName(HOJAS.CONFIG) || ss.insertSheet(HOJAS.CONFIG);
-  hoja.clear();
+  var r = hojaInicializable_(ss, HOJAS.CONFIG);
+  if (!r.nueva) return;
+  var hoja = r.hoja;
   hoja.getRange('A1:B1').setValues([['Parámetro', 'Valor']]).setFontWeight('bold').setBackground('#1a73e8').setFontColor('white');
   hoja.getRange('A2:B6').setValues([
     ['DIAS_PARA_SEGUIMIENTO', 5],
@@ -102,39 +135,51 @@ function crearHojaConfig_(ss) {
 
   hoja.getRange('D1:E1').setValues([['Tipo de documento', 'Palabras clave (separadas por coma)']])
       .setFontWeight('bold').setBackground('#1a73e8').setFontColor('white');
-  hoja.getRange('D2:E5').setValues([
-    ['Certificado de seguro', 'certificado, certificate, coi, insurance certificate, certificado de seguro'],
-    ['Contrato de seguro', 'contrato, contract, poliza, póliza, policy'],
-    ['W9 / Datos fiscales', 'w9, w-9, tax, fiscal'],
-    ['Otros documentos', 'documento, document, adjunto']
+  hoja.getRange('D2:E3').setValues([
+    ['Contrato de seguro', 'contrato, contract, poliza, póliza, policy, seguro, insurance'],
+    ['Certificado de seguro', 'certificado, certificate, coi, insurance certificate, certificado de seguro']
   ]);
   hoja.setColumnWidths(1, 5, 220);
   hoja.getRange('E:E').setWrap(true);
 }
 
 function crearHojaDealers_(ss) {
-  var hoja = ss.getSheetByName(HOJAS.DEALERS) || ss.insertSheet(HOJAS.DEALERS);
-  hoja.clear();
-  var cab = ['Dealer', 'Emails (separados por coma)', 'Contacto', 'Teléfono', 'Notas'];
-  hoja.getRange(1, 1, 1, cab.length).setValues([cab]).setFontWeight('bold').setBackground('#1a73e8').setFontColor('white');
-  hoja.setFrozenRows(1);
-  hoja.setColumnWidths(1, 5, 220);
-  hoja.getRange('A2:E2').setValues([['Dealer Ejemplo S.L.', 'contacto@dealerejemplo.com', 'Juan Pérez', '+34 600 000 000', 'Fila de ejemplo: bórrala']]);
+  var r = hojaInicializable_(ss, HOJAS.DEALERS);
+  if (!r.nueva) return;
+  cabecera_(r.hoja, ['Dealer', 'Emails (separados por coma)', 'Contacto', 'Teléfono', 'Notas']);
+  r.hoja.setColumnWidths(1, 5, 220);
+  r.hoja.getRange('A2:E2').setValues([['Dealer Ejemplo S.L.', 'contacto@dealerejemplo.com', 'Juan Pérez', '+34 600 000 000', 'Fila de ejemplo: bórrala']]);
+}
+
+function crearHojaCampanas_(ss) {
+  var r = hojaInicializable_(ss, HOJAS.CAMPANAS);
+  if (!r.nueva) return;
+  var hoja = r.hoja;
+  cabecera_(hoja, ['ID', 'Nombre', 'Documento', 'Fecha creación', 'Estado', 'Nº dealers', 'Notas']);
+  hoja.setColumnWidth(COL_CAM.NOMBRE, 260);
+  hoja.setColumnWidth(COL_CAM.DOCUMENTO, 220);
+  hoja.setColumnWidth(COL_CAM.NOTAS, 260);
+
+  var regla = SpreadsheetApp.newDataValidation()
+    .requireValueInList([ESTADOS_CAMPANA.ACTIVA, ESTADOS_CAMPANA.CERRADA], true).build();
+  hoja.getRange(2, COL_CAM.ESTADO, hoja.getMaxRows() - 1, 1).setDataValidation(regla);
 }
 
 function crearHojaSolicitudes_(ss) {
-  var hoja = ss.getSheetByName(HOJAS.SOLICITUDES) || ss.insertSheet(HOJAS.SOLICITUDES);
-  hoja.clear();
-  var cab = ['ID', 'Dealer', 'Documento', 'Estado', 'Fecha solicitud', 'Último contacto',
-             'Fecha recibido', 'Archivo (Drive)', 'Días sin respuesta', 'Seguimiento', 'Notas'];
-  hoja.getRange(1, 1, 1, cab.length).setValues([cab]).setFontWeight('bold').setBackground('#1a73e8').setFontColor('white');
-  hoja.setFrozenRows(1);
+  var r = hojaInicializable_(ss, HOJAS.SOLICITUDES);
+  if (!r.nueva) return;
+  var hoja = r.hoja;
+  cabecera_(hoja, ['ID', 'Dealer', 'Documento', 'Campaña', 'Estado', 'Fecha solicitud', 'Último contacto',
+                   'Fecha recibido', 'Archivo (Drive)', 'Días sin respuesta', 'Seguimiento', 'Notas']);
   hoja.setColumnWidth(COL_SOL.DEALER, 200);
   hoja.setColumnWidth(COL_SOL.DOCUMENTO, 200);
+  hoja.setColumnWidth(COL_SOL.CAMPANA, 220);
   hoja.setColumnWidth(COL_SOL.ARCHIVO, 260);
   hoja.setColumnWidth(COL_SOL.NOTAS, 260);
+  aplicarFormatoSolicitudes_(hoja);
+}
 
-  // Validación de estado + formato condicional por color
+function aplicarFormatoSolicitudes_(hoja) {
   var estados = [ESTADOS.PENDIENTE, ESTADOS.SOLICITADO, ESTADOS.RECIBIDO, ESTADOS.VERIFICADO, ESTADOS.INCORRECTO];
   var regla = SpreadsheetApp.newDataValidation().requireValueInList(estados, true).build();
   hoja.getRange(2, COL_SOL.ESTADO, hoja.getMaxRows() - 1, 1).setDataValidation(regla);
@@ -153,44 +198,149 @@ function crearHojaSolicitudes_(ss) {
   hoja.setConditionalFormatRules(reglas);
 }
 
-function crearHojaCorreos_(ss) {
-  var hoja = ss.getSheetByName(HOJAS.CORREOS) || ss.insertSheet(HOJAS.CORREOS);
-  hoja.clear();
-  var cab = ['Fecha', 'Dealer', 'Remitente', 'Asunto', 'Documento detectado',
-             'Adjuntos', 'Estado', 'Link Gmail', 'ThreadId', 'MessageId'];
-  hoja.getRange(1, 1, 1, cab.length).setValues([cab]).setFontWeight('bold').setBackground('#1a73e8').setFontColor('white');
-  hoja.setFrozenRows(1);
-  hoja.setColumnWidth(COL_COR.ASUNTO, 300);
-  hoja.setColumnWidth(COL_COR.ADJUNTOS, 260);
-  hoja.setColumnWidth(COL_COR.LINK, 220);
+/** Migración para hojas creadas con la versión anterior (sin campañas). */
+function migrarEsquema_(ss) {
+  var hoja = ss.getSheetByName(HOJAS.SOLICITUDES);
+  if (!hoja || hoja.getLastColumn() < 1) return;
+  var cab = hoja.getRange(1, 1, 1, hoja.getLastColumn()).getValues()[0];
+  if (cab.indexOf('Campaña') !== -1) return; // ya migrado
+
+  // La versión antigua tenía Documento en la col 3 y Estado en la 4:
+  // insertamos "Campaña" entre ambas y marcamos las filas existentes.
+  hoja.insertColumnAfter(3);
+  hoja.getRange(1, COL_SOL.CAMPANA).setValue('Campaña')
+      .setFontWeight('bold').setBackground('#1a73e8').setFontColor('white');
+  hoja.setColumnWidth(COL_SOL.CAMPANA, 220);
+  if (hoja.getLastRow() > 1) {
+    var n = hoja.getLastRow() - 1;
+    var valores = [];
+    for (var i = 0; i < n; i++) valores.push([SIN_CAMPANA]);
+    hoja.getRange(2, COL_SOL.CAMPANA, n, 1).setValues(valores);
+  }
+  hoja.setConditionalFormatRules([]); // las reglas antiguas apuntaban a la col 4
+  aplicarFormatoSolicitudes_(hoja);
 }
 
-/** Genera la matriz dealer x tipo de documento en "Solicitudes" (sin duplicar las que ya existen). */
-function generarSolicitudes() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var dealers = leerDealers_();
-  var tiposDoc = leerTiposDocumento_().map(function (t) { return t.tipo; })
-    .filter(function (t) { return t !== 'Otros documentos'; });
+// ------------------------------------------------------------
+// CAMPAÑAS: cada casuística nueva es una campaña
+// ------------------------------------------------------------
 
-  var hoja = ss.getSheetByName(HOJAS.SOLICITUDES);
-  var existentes = {};
+/**
+ * Crea una campaña y sus solicitudes. Llamada desde el dashboard.
+ * datos = {
+ *   nombre: 'Contratos de seguro - Jul 2026',
+ *   documento: 'Contrato de seguro',        // existente en Config, o nuevo
+ *   palabrasClave: 'contrato, poliza',      // solo si el documento es nuevo
+ *   dealersModo: 'todos' | 'lista',
+ *   dealersLista: 'Dealer A\nDealer B',     // solo si dealersModo === 'lista'
+ *   notas: ''
+ * }
+ */
+function crearCampana(datos) {
+  if (!datos || !String(datos.nombre || '').trim()) throw new Error('La campaña necesita un nombre.');
+  if (!String(datos.documento || '').trim()) throw new Error('Indica qué documento se solicita.');
+
+  var nombre = String(datos.nombre).trim();
+  var documento = String(datos.documento).trim();
+
+  var yaExiste = leerCampanas_().some(function (c) { return c.nombre === nombre; });
+  if (yaExiste) throw new Error('Ya existe una campaña llamada "' + nombre + '". Usa otro nombre.');
+
+  // Si el tipo de documento es nuevo, lo damos de alta en Config con sus palabras clave
+  var tipos = leerTiposDocumento_();
+  var existeTipo = tipos.some(function (t) { return t.tipo.toLowerCase() === documento.toLowerCase(); });
+  if (!existeTipo) {
+    var palabras = String(datos.palabrasClave || documento).trim();
+    var hojaConfig = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HOJAS.CONFIG);
+    var filaLibre = 2;
+    var col = hojaConfig.getRange('D2:D60').getValues();
+    while (filaLibre - 2 < col.length && col[filaLibre - 2][0]) filaLibre++;
+    hojaConfig.getRange(filaLibre, 4, 1, 2).setValues([[documento, palabras]]);
+  }
+
+  // Dealers de la campaña
+  var todos = leerDealers_();
+  var dealers;
+  if (datos.dealersModo === 'lista') {
+    var pedidos = String(datos.dealersLista || '').split(/[\n,;]+/)
+      .map(function (s) { return s.trim(); }).filter(Boolean);
+    if (!pedidos.length) throw new Error('La lista de dealers está vacía.');
+    var porNombre = {};
+    todos.forEach(function (d) { porNombre[d.nombre.toLowerCase()] = d.nombre; });
+    var noEncontrados = [];
+    dealers = pedidos.map(function (p) {
+      var real = porNombre[p.toLowerCase()];
+      if (!real) noEncontrados.push(p);
+      return real;
+    }).filter(Boolean);
+    if (noEncontrados.length) {
+      throw new Error('Estos dealers no están en la hoja Dealers: ' + noEncontrados.join(', '));
+    }
+  } else {
+    dealers = todos.map(function (d) { return d.nombre; });
+  }
+  if (!dealers.length) throw new Error('No hay dealers. Rellena primero la hoja Dealers.');
+
+  // Registrar la campaña
+  var hojaCam = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HOJAS.CAMPANAS);
+  var id = 'C-' + String(hojaCam.getLastRow()).padStart(3, '0');
+  hojaCam.appendRow([id, nombre, documento, new Date(), ESTADOS_CAMPANA.ACTIVA, dealers.length, String(datos.notas || '')]);
+
+  // Generar las solicitudes (evitando duplicados dentro de la misma campaña)
+  var hojaSol = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HOJAS.SOLICITUDES);
+  var nuevas = dealers.map(function (dealer, i) {
+    return ['S-' + String(hojaSol.getLastRow() + i).padStart(5, '0'),
+            dealer, documento, nombre, ESTADOS.PENDIENTE, '', '', '', '', '', '', ''];
+  });
+  hojaSol.getRange(hojaSol.getLastRow() + 1, 1, nuevas.length, nuevas[0].length).setValues(nuevas);
+
+  return getDashboardData();
+}
+
+/** Cierra una campaña: deja de contar para clasificación y seguimientos. */
+function cerrarCampana(nombre) {
+  var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HOJAS.CAMPANAS);
   var datos = hoja.getDataRange().getValues();
   for (var i = 1; i < datos.length; i++) {
-    existentes[datos[i][COL_SOL.DEALER - 1] + '||' + datos[i][COL_SOL.DOCUMENTO - 1]] = true;
+    if (datos[i][COL_CAM.NOMBRE - 1] === nombre) {
+      hoja.getRange(i + 1, COL_CAM.ESTADO).setValue(ESTADOS_CAMPANA.CERRADA);
+      actualizarSeguimientos();
+      return getDashboardData();
+    }
   }
+  throw new Error('Campaña no encontrada: ' + nombre);
+}
 
-  var nuevas = [];
-  dealers.forEach(function (d) {
-    tiposDoc.forEach(function (doc) {
-      if (!existentes[d.nombre + '||' + doc]) {
-        nuevas.push([siguienteId_(hoja, nuevas.length), d.nombre, doc, ESTADOS.PENDIENTE, '', '', '', '', '', '', '']);
-      }
-    });
-  });
-  if (nuevas.length) {
-    hoja.getRange(hoja.getLastRow() + 1, 1, nuevas.length, nuevas[0].length).setValues(nuevas);
+/** Reabre una campaña cerrada. */
+function reabrirCampana(nombre) {
+  var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HOJAS.CAMPANAS);
+  var datos = hoja.getDataRange().getValues();
+  for (var i = 1; i < datos.length; i++) {
+    if (datos[i][COL_CAM.NOMBRE - 1] === nombre) {
+      hoja.getRange(i + 1, COL_CAM.ESTADO).setValue(ESTADOS_CAMPANA.ACTIVA);
+      actualizarSeguimientos();
+      return getDashboardData();
+    }
   }
-  Logger.log('Solicitudes creadas: ' + nuevas.length);
+  throw new Error('Campaña no encontrada: ' + nombre);
+}
+
+function leerCampanas_() {
+  var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HOJAS.CAMPANAS);
+  if (!hoja) return [];
+  var datos = hoja.getDataRange().getValues();
+  var res = [];
+  for (var i = 1; i < datos.length; i++) {
+    if (!datos[i][COL_CAM.NOMBRE - 1]) continue;
+    res.push({
+      id: datos[i][COL_CAM.ID - 1],
+      nombre: datos[i][COL_CAM.NOMBRE - 1],
+      documento: datos[i][COL_CAM.DOCUMENTO - 1],
+      fecha: datos[i][COL_CAM.FECHA - 1],
+      estado: datos[i][COL_CAM.ESTADO - 1] || ESTADOS_CAMPANA.ACTIVA
+    });
+  }
+  return res;
 }
 
 // ------------------------------------------------------------
@@ -246,12 +396,17 @@ function procesarCorreos() {
   }
 }
 
-/** Recalcula "Días sin respuesta" y marca qué solicitudes necesitan seguimiento. */
+/** Recalcula "Días sin respuesta" y marca qué solicitudes necesitan seguimiento (solo campañas activas). */
 function actualizarSeguimientos() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var hoja = ss.getSheetByName(HOJAS.SOLICITUDES);
   var datos = hoja.getDataRange().getValues();
   if (datos.length < 2) return;
+
+  var cerradas = {};
+  leerCampanas_().forEach(function (c) {
+    if (c.estado === ESTADOS_CAMPANA.CERRADA) cerradas[c.nombre] = true;
+  });
 
   var diasLimite = Number(getConfig_('DIAS_PARA_SEGUIMIENTO')) || 5;
   var hoy = new Date();
@@ -259,11 +414,13 @@ function actualizarSeguimientos() {
 
   for (var i = 1; i < datos.length; i++) {
     var estado = datos[i][COL_SOL.ESTADO - 1];
+    var campana = datos[i][COL_SOL.CAMPANA - 1];
     var referencia = datos[i][COL_SOL.ULTIMO_CONTACTO - 1] || datos[i][COL_SOL.FECHA_SOLICITUD - 1];
     var dias = '';
     var seguimiento = '';
 
-    if ((estado === ESTADOS.SOLICITADO || estado === ESTADOS.INCORRECTO) && referencia instanceof Date) {
+    var activa = !cerradas[campana];
+    if (activa && (estado === ESTADOS.SOLICITADO || estado === ESTADOS.INCORRECTO) && referencia instanceof Date) {
       dias = Math.floor((hoy - referencia) / (1000 * 60 * 60 * 24));
       seguimiento = dias >= diasLimite ? 'SÍ' : '';
     }
@@ -316,23 +473,39 @@ function registrarCorreo_(msg, dealer, docDetectado, archivos) {
   ]);
 }
 
+/**
+ * Actualiza la fila de Solicitudes que corresponde al documento recibido.
+ * Busca dealer + documento entre las campañas ACTIVAS (la más reciente primero);
+ * si no hay ninguna, acepta filas sin campaña (datos migrados).
+ */
 function actualizarSolicitud_(dealer, docDetectado, msg, archivos) {
   if (!docDetectado || docDetectado === 'Otros documentos') return;
   var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HOJAS.SOLICITUDES);
   var datos = hoja.getDataRange().getValues();
 
+  var campanas = {};
+  leerCampanas_().forEach(function (c) { campanas[c.nombre] = c; });
+
+  var mejor = null; // {fila, fecha}
   for (var i = 1; i < datos.length; i++) {
-    if (datos[i][COL_SOL.DEALER - 1] === dealer && datos[i][COL_SOL.DOCUMENTO - 1] === docDetectado) {
-      var estadoActual = datos[i][COL_SOL.ESTADO - 1];
-      if (estadoActual === ESTADOS.VERIFICADO) return; // no reabrir lo ya cerrado
-      hoja.getRange(i + 1, COL_SOL.ESTADO).setValue(ESTADOS.RECIBIDO);
-      hoja.getRange(i + 1, COL_SOL.FECHA_RECIBIDO).setValue(msg.getDate());
-      hoja.getRange(i + 1, COL_SOL.ULTIMO_CONTACTO).setValue(msg.getDate());
-      if (archivos.length) {
-        hoja.getRange(i + 1, COL_SOL.ARCHIVO).setValue(archivos.map(function (a) { return a.url; }).join('\n'));
-      }
-      return;
-    }
+    if (datos[i][COL_SOL.DEALER - 1] !== dealer) continue;
+    if (datos[i][COL_SOL.DOCUMENTO - 1] !== docDetectado) continue;
+    if (datos[i][COL_SOL.ESTADO - 1] === ESTADOS.VERIFICADO) continue; // no reabrir lo cerrado
+
+    var nombreCam = datos[i][COL_SOL.CAMPANA - 1];
+    var cam = campanas[nombreCam];
+    if (cam && cam.estado === ESTADOS_CAMPANA.CERRADA) continue;
+
+    var fecha = cam && cam.fecha instanceof Date ? cam.fecha.getTime() : 0;
+    if (!mejor || fecha > mejor.fecha) mejor = { fila: i + 1, fecha: fecha };
+  }
+  if (!mejor) return;
+
+  hoja.getRange(mejor.fila, COL_SOL.ESTADO).setValue(ESTADOS.RECIBIDO);
+  hoja.getRange(mejor.fila, COL_SOL.FECHA_RECIBIDO).setValue(msg.getDate());
+  hoja.getRange(mejor.fila, COL_SOL.ULTIMO_CONTACTO).setValue(msg.getDate());
+  if (archivos.length) {
+    hoja.getRange(mejor.fila, COL_SOL.ARCHIVO).setValue(archivos.map(function (a) { return a.url; }).join('\n'));
   }
 }
 
@@ -352,23 +525,15 @@ function getDashboardData() {
   var solicitudes = hojaAObjetos_(ss.getSheetByName(HOJAS.SOLICITUDES));
   var correos = hojaAObjetos_(ss.getSheetByName(HOJAS.CORREOS));
   correos.reverse(); // más recientes primero
-
-  var kpis = { total: solicitudes.length, pendientes: 0, solicitadas: 0, recibidas: 0, verificadas: 0, incorrectas: 0, seguimientos: 0 };
-  solicitudes.forEach(function (s) {
-    if (s['Estado'] === ESTADOS.PENDIENTE) kpis.pendientes++;
-    if (s['Estado'] === ESTADOS.SOLICITADO) kpis.solicitadas++;
-    if (s['Estado'] === ESTADOS.RECIBIDO) kpis.recibidas++;
-    if (s['Estado'] === ESTADOS.VERIFICADO) kpis.verificadas++;
-    if (s['Estado'] === ESTADOS.INCORRECTO) kpis.incorrectas++;
-    if (s['Seguimiento'] === 'SÍ') kpis.seguimientos++;
-  });
+  var campanas = hojaAObjetos_(ss.getSheetByName(HOJAS.CAMPANAS));
 
   return {
-    kpis: kpis,
     solicitudes: solicitudes,
     correos: correos.slice(0, 200),
+    campanas: campanas,
+    tiposDocumento: leerTiposDocumento_().map(function (t) { return t.tipo; }),
+    dealers: leerDealers_().map(function (d) { return d.nombre; }),
     urlSheet: ss.getUrl(),
-    estados: ESTADOS,
     actualizado: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm')
   };
 }
@@ -424,18 +589,21 @@ function crearBorradorSeguimiento(id) {
   return getDashboardData();
 }
 
-/** Crea borradores de solicitud inicial para todos los documentos en estado "Pendiente" (agrupados por dealer). */
-function crearSolicitudesIniciales() {
+/**
+ * Crea borradores de solicitud para los documentos en estado "Pendiente",
+ * agrupados por dealer. Si se indica una campaña, solo los de esa campaña.
+ */
+function crearSolicitudesIniciales(campana) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var hoja = ss.getSheetByName(HOJAS.SOLICITUDES);
   var datos = hoja.getDataRange().getValues();
   var porDealer = {};
 
   for (var i = 1; i < datos.length; i++) {
-    if (datos[i][COL_SOL.ESTADO - 1] === ESTADOS.PENDIENTE) {
-      var dealer = datos[i][COL_SOL.DEALER - 1];
-      (porDealer[dealer] = porDealer[dealer] || []).push({ fila: i + 1, doc: datos[i][COL_SOL.DOCUMENTO - 1] });
-    }
+    if (datos[i][COL_SOL.ESTADO - 1] !== ESTADOS.PENDIENTE) continue;
+    if (campana && datos[i][COL_SOL.CAMPANA - 1] !== campana) continue;
+    var dealer = datos[i][COL_SOL.DEALER - 1];
+    (porDealer[dealer] = porDealer[dealer] || []).push({ fila: i + 1, doc: datos[i][COL_SOL.DOCUMENTO - 1] });
   }
 
   var creados = 0;
@@ -518,7 +686,7 @@ function leerDealers_() {
 
 function leerTiposDocumento_() {
   var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HOJAS.CONFIG);
-  var datos = hoja.getRange('D2:E30').getValues();
+  var datos = hoja.getRange('D2:E60').getValues();
   return datos.filter(function (f) { return f[0]; }).map(function (f) {
     return {
       tipo: String(f[0]).trim(),
@@ -552,11 +720,8 @@ function buscarFilaSolicitud_(id) {
   return null;
 }
 
-function siguienteId_(hoja, offset) {
-  return 'S-' + String(hoja.getLastRow() + offset).padStart(5, '0');
-}
-
 function hojaAObjetos_(hoja) {
+  if (!hoja) return [];
   var datos = hoja.getDataRange().getValues();
   if (datos.length < 2) return [];
   var cab = datos[0];

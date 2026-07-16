@@ -41,7 +41,7 @@
     background: var(--page); color: var(--ink);
     padding: 20px; max-width: 1200px; margin: 0 auto;
   }
-  header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 18px; }
+  header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 16px; }
   header h1 { font-size: 20px; font-weight: 700; }
   header .meta { color: var(--muted); font-size: 12px; }
   header .spacer { flex: 1; }
@@ -56,6 +56,27 @@
   button:disabled { opacity: .5; cursor: wait; }
   button.small { padding: 3px 8px; font-size: 12px; border-radius: 6px; }
 
+  /* Selector de campaña */
+  .campana-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .campana-bar label { font-size: 13px; color: var(--ink-2); }
+  select, input[type=search], input[type=text], textarea {
+    font: inherit; font-size: 13px; padding: 7px 10px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface); color: var(--ink);
+  }
+  #selCampana { max-width: 380px; }
+
+  /* Tarjetas de campaña */
+  .campanas { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .camp-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .camp-card.cerrada { opacity: .6; }
+  .camp-card h3 { font-size: 14px; margin-bottom: 2px; }
+  .camp-card .sub { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .camp-card .pct { font-weight: 700; font-size: 13px; }
+  .camp-card .bar { display: flex; gap: 2px; height: 10px; border-radius: 4px; overflow: hidden; margin: 6px 0 10px; background: var(--hairline); }
+  .camp-card .seg { min-width: 2px; }
+  .camp-card .row { display: flex; gap: 6px; flex-wrap: wrap; }
+
   /* KPI tiles */
   .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 14px; }
   .tile {
@@ -68,7 +89,7 @@
   .tile .value { font-size: 26px; font-weight: 700; margin-top: 2px; }
   .tile.active { outline: 2px solid var(--blue); }
 
-  /* Distribution bar */
+  /* Barra de progreso general */
   .dist { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 18px; }
   .dist .bar { display: flex; gap: 2px; height: 14px; border-radius: 4px; overflow: hidden; margin-top: 8px; }
   .dist .seg { min-width: 3px; }
@@ -80,16 +101,10 @@
   .tabs button.active { color: var(--ink); font-weight: 700; box-shadow: inset 0 -2px 0 var(--blue); }
   .tabs .count { background: var(--hairline); border-radius: 10px; font-size: 11px; padding: 1px 7px; margin-left: 4px; }
 
-  /* Filters */
   .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
-  input[type=search], select {
-    font: inherit; font-size: 13px; padding: 7px 10px;
-    border: 1px solid var(--border); border-radius: 8px;
-    background: var(--surface); color: var(--ink);
-  }
   input[type=search] { flex: 1; min-width: 180px; }
 
-  /* Table */
+  /* Tabla */
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th { text-align: left; color: var(--muted); font-weight: 600; font-size: 12px; padding: 10px 12px; border-bottom: 1px solid var(--hairline); white-space: nowrap; }
@@ -107,11 +122,28 @@
   .empty { text-align: center; color: var(--muted); padding: 30px; }
   .followup { color: var(--critical); font-weight: 700; }
 
-  /* Toast */
+  /* Modal Nueva campaña */
+  #modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,.45);
+    display: none; align-items: flex-start; justify-content: center; padding: 40px 16px; z-index: 10;
+  }
+  #modal.open { display: flex; }
+  .modal-box {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; width: 100%; max-width: 520px;
+  }
+  .modal-box h2 { font-size: 16px; margin-bottom: 14px; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 12px; color: var(--ink-2); margin-bottom: 4px; }
+  .field input[type=text], .field select, .field textarea { width: 100%; }
+  .field .hint { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .field .radio { font-size: 13px; margin-right: 14px; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
   #toast {
     position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
     background: var(--ink); color: var(--page); padding: 10px 18px;
-    border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity .3s; pointer-events: none;
+    border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 20;
   }
   #toast.show { opacity: 1; }
   #loading { text-align: center; color: var(--muted); padding: 60px 0; }
@@ -124,17 +156,26 @@
   <span class="meta" id="updated"></span>
   <span class="spacer"></span>
   <a class="btn" id="sheetLink" target="_blank" rel="noopener">Abrir Google Sheet</a>
-  <button id="btnRequests" onclick="crearSolicitudes()">✉️ Borradores de solicitud</button>
   <button class="primary" id="btnScan" onclick="escanear()">🔄 Escanear correos ahora</button>
 </header>
 
 <div id="loading">Cargando datos…</div>
 
 <div id="app" style="display:none">
+
+  <div class="campana-bar">
+    <label for="selCampana">Campaña:</label>
+    <select id="selCampana" onchange="cambiarCampana(this.value)"></select>
+    <button onclick="abrirModal()">➕ Nueva campaña</button>
+    <button id="btnRequests" onclick="crearSolicitudes()">✉️ Borradores de solicitud</button>
+  </div>
+
+  <div class="campanas" id="campanas"></div>
+
   <div class="kpis" id="kpis"></div>
 
   <div class="dist">
-    <div class="title">Progreso general de documentación</div>
+    <div class="title" id="distTitle">Progreso</div>
     <div class="bar" id="distBar"></div>
   </div>
 
@@ -154,12 +195,49 @@
   <div class="card"><div id="content"></div></div>
 </div>
 
+<!-- Modal: nueva campaña -->
+<div id="modal">
+  <div class="modal-box">
+    <h2>➕ Nueva campaña</h2>
+    <div class="field">
+      <label for="fNombre">Nombre de la campaña</label>
+      <input type="text" id="fNombre" placeholder="Ej: Contratos de seguro - Jul 2026">
+    </div>
+    <div class="field">
+      <label for="fDocumento">Documento que se solicita</label>
+      <select id="fDocumento" onchange="toggleNuevoDoc()"></select>
+    </div>
+    <div class="field" id="fNuevoDocWrap" style="display:none">
+      <label for="fNuevoDoc">Nombre del documento nuevo</label>
+      <input type="text" id="fNuevoDoc" placeholder="Ej: Licencia de actividad">
+      <label for="fKeywords" style="margin-top:8px">Palabras clave para detectarlo en los correos</label>
+      <input type="text" id="fKeywords" placeholder="Ej: licencia, license, actividad">
+      <div class="hint">Separadas por comas. Se buscan en el asunto, los adjuntos y el cuerpo del correo.</div>
+    </div>
+    <div class="field">
+      <label>Dealers incluidos</label>
+      <label class="radio"><input type="radio" name="fDealersModo" value="todos" checked onchange="toggleListaDealers()"> Todos (<span id="nDealers"></span>)</label>
+      <label class="radio"><input type="radio" name="fDealersModo" value="lista" onchange="toggleListaDealers()"> Solo algunos</label>
+      <textarea id="fDealersLista" rows="4" style="display:none;width:100%;margin-top:6px"
+        placeholder="Un dealer por línea (con el mismo nombre que en la hoja Dealers)"></textarea>
+    </div>
+    <div class="field">
+      <label for="fNotas">Notas (opcional)</label>
+      <input type="text" id="fNotas">
+    </div>
+    <div class="modal-actions">
+      <button onclick="cerrarModal()">Cancelar</button>
+      <button class="primary" id="btnCrearCampana" onclick="enviarCampana()">Crear campaña</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
   var DATA = null;
   var TAB = 'solicitudes';
-  var FILTRO_KPI = '';
+  var CAMPANA_SEL = ''; // '' = todas
 
   var COLOR_ESTADO = {
     'Pendiente':               'var(--muted)',
@@ -172,6 +250,7 @@
     'Pendiente': '⏳', 'Solicitado': '📤', 'Recibido - Por revisar': '📥',
     'Verificado': '✔', 'Incorrecto - Reenviar': '✖'
   };
+  var ORDEN_BARRA = ['Verificado', 'Recibido - Por revisar', 'Incorrecto - Reenviar', 'Solicitado', 'Pendiente'];
 
   function cargar() {
     google.script.run.withSuccessHandler(pintar).withFailureHandler(error).getDashboardData();
@@ -184,31 +263,115 @@
     document.getElementById('updated').textContent = 'Actualizado: ' + data.actualizado;
     document.getElementById('sheetLink').href = data.urlSheet;
 
-    var sel = document.getElementById('filtroEstado');
-    if (sel.options.length === 1) {
+    var selE = document.getElementById('filtroEstado');
+    if (selE.options.length === 1) {
       Object.keys(COLOR_ESTADO).forEach(function (e) {
-        var o = document.createElement('option'); o.value = e; o.textContent = e; sel.appendChild(o);
+        var o = document.createElement('option'); o.value = e; o.textContent = e; selE.appendChild(o);
       });
     }
+    pintarSelectorCampanas();
     render();
   }
 
+  function pintarSelectorCampanas() {
+    var sel = document.getElementById('selCampana');
+    sel.innerHTML = '';
+    var oTodas = document.createElement('option');
+    oTodas.value = ''; oTodas.textContent = '🌐 Todas las campañas';
+    sel.appendChild(oTodas);
+
+    var activas = DATA.campanas.filter(function (c) { return c['Estado'] !== 'Cerrada'; });
+    var cerradas = DATA.campanas.filter(function (c) { return c['Estado'] === 'Cerrada'; });
+    activas.concat(cerradas).forEach(function (c) {
+      var o = document.createElement('option');
+      o.value = c['Nombre'];
+      o.textContent = (c['Estado'] === 'Cerrada' ? '🔒 ' : '📂 ') + c['Nombre'] +
+                      (c['Estado'] === 'Cerrada' ? ' (cerrada)' : '');
+      sel.appendChild(o);
+    });
+    if (DATA.solicitudes.some(function (s) { return s['Campaña'] === '(sin campaña)'; })) {
+      var o2 = document.createElement('option');
+      o2.value = '(sin campaña)'; o2.textContent = '❔ (sin campaña)';
+      sel.appendChild(o2);
+    }
+    sel.value = CAMPANA_SEL;
+    if (sel.value !== CAMPANA_SEL) { CAMPANA_SEL = ''; sel.value = ''; }
+  }
+
+  function cambiarCampana(v) { CAMPANA_SEL = v; render(); }
+
+  function solicitudesDeCampana(campana) {
+    return DATA.solicitudes.filter(function (s) { return !campana || s['Campaña'] === campana; });
+  }
+
+  function kpisDe(filas) {
+    var k = { total: filas.length, pendientes: 0, solicitadas: 0, recibidas: 0, verificadas: 0, incorrectas: 0, seguimientos: 0 };
+    filas.forEach(function (s) {
+      if (s['Estado'] === 'Pendiente') k.pendientes++;
+      if (s['Estado'] === 'Solicitado') k.solicitadas++;
+      if (s['Estado'] === 'Recibido - Por revisar') k.recibidas++;
+      if (s['Estado'] === 'Verificado') k.verificadas++;
+      if (s['Estado'] === 'Incorrecto - Reenviar') k.incorrectas++;
+      if (s['Seguimiento'] === 'SÍ') k.seguimientos++;
+    });
+    return k;
+  }
+
+  function barraHtml(k) {
+    var partes = [
+      ['Verificado', k.verificadas], ['Recibido - Por revisar', k.recibidas],
+      ['Incorrecto - Reenviar', k.incorrectas], ['Solicitado', k.solicitadas], ['Pendiente', k.pendientes]
+    ];
+    var total = Math.max(k.total, 1);
+    return partes.map(function (p) {
+      if (!p[1]) return '';
+      return '<div class="seg" style="width:' + (100 * p[1] / total) + '%;background:' + COLOR_ESTADO[p[0]] + '" title="' + p[0] + ': ' + p[1] + '"></div>';
+    }).join('');
+  }
+
   function kpiTile(label, value, color, filtro) {
-    var active = FILTRO_KPI === filtro ? ' active' : '';
+    var active = document.getElementById('filtroEstado').value === filtro && filtro !== '__seg__' ? ' active' : '';
     return '<div class="tile' + active + '" onclick="filtrarKpi(\'' + (filtro || '') + '\')">' +
       '<div class="label"><span class="dot" style="background:' + color + '"></span>' + label + '</div>' +
       '<div class="value">' + value + '</div></div>';
   }
 
   function filtrarKpi(estado) {
-    FILTRO_KPI = FILTRO_KPI === estado ? '' : estado;
-    document.getElementById('filtroEstado').value = FILTRO_KPI;
     if (estado === '__seg__') { setTab('seguimiento'); return; }
+    var sel = document.getElementById('filtroEstado');
+    sel.value = sel.value === estado ? '' : estado;
     setTab('solicitudes');
   }
 
   function render() {
-    var k = DATA.kpis;
+    var filasCampana = solicitudesDeCampana(CAMPANA_SEL);
+    var k = kpisDe(filasCampana);
+
+    // Tarjetas de campaña (solo en la vista "Todas")
+    var cont = document.getElementById('campanas');
+    if (!CAMPANA_SEL && DATA.campanas.length) {
+      cont.style.display = '';
+      cont.innerHTML = DATA.campanas.map(function (c) {
+        var kc = kpisDe(solicitudesDeCampana(c['Nombre']));
+        var pct = kc.total ? Math.round(100 * kc.verificadas / kc.total) : 0;
+        var cerrada = c['Estado'] === 'Cerrada';
+        return '<div class="camp-card' + (cerrada ? ' cerrada' : '') + '">' +
+          '<h3>' + esc(c['Nombre']) + '</h3>' +
+          '<div class="sub">' + esc(c['Documento']) + ' · ' + esc(c['Fecha creación']) + ' · ' + kc.total + ' dealers' + (cerrada ? ' · 🔒 cerrada' : '') + '</div>' +
+          '<span class="pct">' + pct + '% verificado</span>' +
+          '<div class="bar">' + barraHtml(kc) + '</div>' +
+          '<div class="row">' +
+            '<button class="small" onclick="verCampana(\'' + escAttr(c['Nombre']) + '\')">Ver</button>' +
+            (cerrada
+              ? '<button class="small" onclick="reabrir(\'' + escAttr(c['Nombre']) + '\')">Reabrir</button>'
+              : '<button class="small" onclick="borradoresCampana(\'' + escAttr(c['Nombre']) + '\')">✉️ Borradores</button>' +
+                '<button class="small" onclick="cerrar(\'' + escAttr(c['Nombre']) + '\')">Cerrar</button>') +
+          '</div></div>';
+      }).join('');
+    } else {
+      cont.style.display = 'none';
+    }
+
     document.getElementById('kpis').innerHTML =
       kpiTile('Pendientes', k.pendientes, 'var(--muted)', 'Pendiente') +
       kpiTile('Solicitadas', k.solicitadas, 'var(--blue)', 'Solicitado') +
@@ -217,23 +380,19 @@
       kpiTile('Verificadas', k.verificadas, 'var(--good)', 'Verificado') +
       kpiTile('⚠ Necesitan seguimiento', k.seguimientos, 'var(--serious)', '__seg__');
 
-    var partes = [
-      ['Verificado', k.verificadas], ['Recibido - Por revisar', k.recibidas],
-      ['Incorrecto - Reenviar', k.incorrectas], ['Solicitado', k.solicitadas], ['Pendiente', k.pendientes]
-    ];
-    var total = Math.max(k.total, 1);
-    document.getElementById('distBar').innerHTML = partes.map(function (p) {
-      return '<div class="seg" style="width:' + (100 * p[1] / total) + '%;background:' + COLOR_ESTADO[p[0]] + '" title="' + p[0] + ': ' + p[1] + '"></div>';
-    }).join('');
+    document.getElementById('distTitle').textContent =
+      (CAMPANA_SEL ? 'Progreso de "' + CAMPANA_SEL + '"' : 'Progreso general') +
+      ' — ' + (k.total ? Math.round(100 * k.verificadas / Math.max(k.total, 1)) : 0) + '% verificado';
+    document.getElementById('distBar').innerHTML = barraHtml(k);
 
-    var seguimientos = DATA.solicitudes.filter(function (s) { return s['Seguimiento'] === 'SÍ'; });
+    var seguimientos = filasCampana.filter(function (s) { return s['Seguimiento'] === 'SÍ'; });
     var correosAbiertos = DATA.correos.filter(function (c) { return c['Estado'] !== 'Gestionado'; });
-    document.getElementById('cnt-solicitudes').textContent = DATA.solicitudes.length;
+    document.getElementById('cnt-solicitudes').textContent = filasCampana.length;
     document.getElementById('cnt-seguimiento').textContent = seguimientos.length;
     document.getElementById('cnt-correos').textContent = correosAbiertos.length;
 
     var html = '';
-    if (TAB === 'solicitudes') html = tablaSolicitudes(filtrar(DATA.solicitudes));
+    if (TAB === 'solicitudes') html = tablaSolicitudes(filtrar(filasCampana));
     if (TAB === 'seguimiento') html = tablaSolicitudes(filtrar(seguimientos));
     if (TAB === 'correos') html = tablaCorreos(filtrar(DATA.correos));
     document.getElementById('content').innerHTML = html;
@@ -258,8 +417,10 @@
 
   function tablaSolicitudes(filas) {
     if (!filas.length) return '<div class="empty">No hay solicitudes que coincidan.</div>';
-    var h = '<table><tr><th>Dealer</th><th>Documento</th><th>Estado</th><th>Último contacto</th>' +
-            '<th>Días</th><th>Archivo</th><th>Acciones</th></tr>';
+    var conCampana = !CAMPANA_SEL;
+    var h = '<table><tr><th>Dealer</th><th>Documento</th>' +
+            (conCampana ? '<th>Campaña</th>' : '') +
+            '<th>Estado</th><th>Último contacto</th><th>Días</th><th>Archivo</th><th>Acciones</th></tr>';
     filas.forEach(function (s) {
       var dias = s['Días sin respuesta'];
       var archivo = s['Archivo (Drive)']
@@ -269,6 +430,7 @@
         : '<span style="color:var(--muted)">—</span>';
       var seg = s['Seguimiento'] === 'SÍ' ? ' <span class="followup">⚠</span>' : '';
       h += '<tr><td>' + esc(s['Dealer']) + '</td><td>' + esc(s['Documento']) + '</td>' +
+        (conCampana ? '<td>' + esc(s['Campaña'] || '') + '</td>' : '') +
         '<td>' + badge(s['Estado']) + seg + '</td>' +
         '<td>' + esc(s['Último contacto'] || '—') + '</td>' +
         '<td class="num">' + (dias === '' ? '—' : dias) + '</td>' +
@@ -317,6 +479,71 @@
     render();
   }
 
+  // ---- Campañas ----
+  function verCampana(nombre) {
+    CAMPANA_SEL = nombre;
+    document.getElementById('selCampana').value = nombre;
+    render();
+  }
+  function cerrar(nombre) {
+    if (!confirm('¿Cerrar la campaña "' + nombre + '"? Sus solicitudes dejarán de generar seguimientos.')) return;
+    llamar('cerrarCampana', [nombre], 'Campaña cerrada 🔒');
+  }
+  function reabrir(nombre) { llamar('reabrirCampana', [nombre], 'Campaña reabierta 📂'); }
+  function borradoresCampana(nombre) {
+    if (!confirm('Se crearán borradores en Gmail para los documentos "Pendientes" de la campaña "' + nombre + '". ¿Continuar?')) return;
+    crearSolicitudesServidor(nombre);
+  }
+
+  function abrirModal() {
+    var sel = document.getElementById('fDocumento');
+    sel.innerHTML = '';
+    DATA.tiposDocumento.forEach(function (t) {
+      var o = document.createElement('option'); o.value = t; o.textContent = t; sel.appendChild(o);
+    });
+    var oNuevo = document.createElement('option');
+    oNuevo.value = '__nuevo__'; oNuevo.textContent = '➕ Documento nuevo…';
+    sel.appendChild(oNuevo);
+    document.getElementById('nDealers').textContent = DATA.dealers.length;
+    toggleNuevoDoc();
+    document.getElementById('modal').classList.add('open');
+  }
+  function cerrarModal() { document.getElementById('modal').classList.remove('open'); }
+  function toggleNuevoDoc() {
+    var esNuevo = document.getElementById('fDocumento').value === '__nuevo__';
+    document.getElementById('fNuevoDocWrap').style.display = esNuevo ? '' : 'none';
+  }
+  function toggleListaDealers() {
+    var modo = document.querySelector('input[name=fDealersModo]:checked').value;
+    document.getElementById('fDealersLista').style.display = modo === 'lista' ? '' : 'none';
+  }
+
+  function enviarCampana() {
+    var esNuevo = document.getElementById('fDocumento').value === '__nuevo__';
+    var datos = {
+      nombre: document.getElementById('fNombre').value,
+      documento: esNuevo ? document.getElementById('fNuevoDoc').value : document.getElementById('fDocumento').value,
+      palabrasClave: esNuevo ? document.getElementById('fKeywords').value : '',
+      dealersModo: document.querySelector('input[name=fDealersModo]:checked').value,
+      dealersLista: document.getElementById('fDealersLista').value,
+      notas: document.getElementById('fNotas').value
+    };
+    if (!datos.nombre.trim()) { toast('Ponle un nombre a la campaña'); return; }
+    if (!datos.documento.trim()) { toast('Indica el documento que se solicita'); return; }
+
+    var btn = document.getElementById('btnCrearCampana');
+    btn.disabled = true;
+    google.script.run.withSuccessHandler(function (data) {
+      btn.disabled = false;
+      cerrarModal();
+      CAMPANA_SEL = datos.nombre.trim();
+      pintar(data);
+      toast('Campaña creada ✔ Ahora puedes generar los borradores de solicitud.');
+    }).withFailureHandler(function (e) {
+      btn.disabled = false; error(e);
+    }).crearCampana(datos);
+  }
+
   // ---- Acciones contra el servidor ----
   function llamar(fn, args, mensaje) {
     toast('Trabajando…');
@@ -334,6 +561,7 @@
   }
   function seguimiento(id) { llamar('crearBorradorSeguimiento', [id], 'Borrador de seguimiento creado en Gmail ✉️'); }
   function gestionado(msgId) { llamar('marcarCorreoGestionado', [msgId], 'Correo marcado como gestionado'); }
+
   function escanear() {
     document.getElementById('btnScan').disabled = true;
     toast('Escaneando Gmail…');
@@ -344,21 +572,27 @@
       document.getElementById('btnScan').disabled = false; error(e);
     }).escanearAhora();
   }
+
   function crearSolicitudes() {
-    if (!confirm('Se crearán borradores en Gmail para todos los documentos en estado "Pendiente", agrupados por dealer. ¿Continuar?')) return;
-    document.getElementById('btnRequests').disabled = true;
+    var ambito = CAMPANA_SEL ? 'la campaña "' + CAMPANA_SEL + '"' : 'TODAS las campañas';
+    if (!confirm('Se crearán borradores en Gmail para los documentos en estado "Pendiente" de ' + ambito + ', agrupados por dealer. ¿Continuar?')) return;
+    crearSolicitudesServidor(CAMPANA_SEL || null);
+  }
+  function crearSolicitudesServidor(campana) {
+    var btn = document.getElementById('btnRequests');
+    btn.disabled = true;
     google.script.run.withSuccessHandler(function (r) {
-      document.getElementById('btnRequests').disabled = false;
+      btn.disabled = false;
       pintar(r.data); toast(r.borradores + ' borradores creados en Gmail ✉️');
     }).withFailureHandler(function (e) {
-      document.getElementById('btnRequests').disabled = false; error(e);
-    }).crearSolicitudesIniciales();
+      btn.disabled = false; error(e);
+    }).crearSolicitudesIniciales(campana);
   }
 
   function toast(msg) {
     var t = document.getElementById('toast');
     t.textContent = msg; t.classList.add('show');
-    clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove('show'); }, 3000);
+    clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove('show'); }, 3500);
   }
   function error(e) {
     document.getElementById('loading').textContent = '';
@@ -368,6 +602,10 @@
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
+  }
+  // Para nombres dentro de onclick="fn('…')": primero se escapa para JS, luego para HTML
+  function escAttr(s) {
+    return esc(String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
   }
 
   cargar();
