@@ -199,6 +199,17 @@ function aplicarFormatoSolicitudes_(hoja) {
   hoja.setConditionalFormatRules(reglas);
 }
 
+function crearHojaCorreos_(ss) {
+  var r = hojaInicializable_(ss, HOJAS.CORREOS);
+  if (!r.nueva) return;
+  var hoja = r.hoja;
+  cabecera_(hoja, ['Fecha', 'Dealer', 'Remitente', 'Asunto', 'Documento detectado',
+                   'Adjuntos', 'Estado', 'Link Gmail', 'ThreadId', 'MessageId']);
+  hoja.setColumnWidth(COL_COR.ASUNTO, 300);
+  hoja.setColumnWidth(COL_COR.ADJUNTOS, 260);
+  hoja.setColumnWidth(COL_COR.LINK, 220);
+}
+
 /** Migración para hojas creadas con la versión anterior (sin campañas). */
 function migrarEsquema_(ss) {
   var hoja = ss.getSheetByName(HOJAS.SOLICITUDES);
