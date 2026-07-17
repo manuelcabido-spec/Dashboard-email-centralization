@@ -22,6 +22,10 @@
 // CONFIGURACIÓN GENERAL
 // ------------------------------------------------------------
 
+// Debe coincidir con la constante VERSION de Dashboard.html: si el dashboard
+// muestra el aviso de versión, falta publicar "Nueva versión" en Implementar.
+var VERSION = 4;
+
 var HOJAS = {
   DEALERS: 'Dealers',
   CAMPANAS: 'Campañas',
@@ -54,7 +58,7 @@ var ETIQUETA_REVISAR = 'DealerTracker/Revisar';
 var COL_SOL = {
   ID: 1, DEALER: 2, DOCUMENTO: 3, CAMPANA: 4, ESTADO: 5, FECHA_SOLICITUD: 6,
   ULTIMO_CONTACTO: 7, FECHA_RECIBIDO: 8, ARCHIVO: 9,
-  DIAS_SIN_RESPUESTA: 10, SEGUIMIENTO: 11, NOTAS: 12
+  DIAS_SIN_RESPUESTA: 10, SEGUIMIENTO: 11, NOTAS: 12, LINK_CORREO: 13
 };
 
 // Columnas de la hoja Campañas
@@ -171,7 +175,7 @@ function crearHojaSolicitudes_(ss) {
   if (!r.nueva) return;
   var hoja = r.hoja;
   cabecera_(hoja, ['ID', 'Dealer', 'Documento', 'Campaña', 'Estado', 'Fecha solicitud', 'Último contacto',
-                   'Fecha recibido', 'Archivo (Drive)', 'Días sin respuesta', 'Seguimiento', 'Notas']);
+                   'Fecha recibido', 'Archivo (Drive)', 'Días sin respuesta', 'Seguimiento', 'Notas', 'Link correo']);
   hoja.setColumnWidth(COL_SOL.DEALER, 200);
   hoja.setColumnWidth(COL_SOL.DOCUMENTO, 200);
   hoja.setColumnWidth(COL_SOL.CAMPANA, 220);
@@ -210,27 +214,35 @@ function crearHojaCorreos_(ss) {
   hoja.setColumnWidth(COL_COR.LINK, 220);
 }
 
-/** Migración para hojas creadas con la versión anterior (sin campañas). */
+/** Migración para hojas creadas con versiones anteriores. */
 function migrarEsquema_(ss) {
   var hoja = ss.getSheetByName(HOJAS.SOLICITUDES);
   if (!hoja || hoja.getLastColumn() < 1) return;
   var cab = hoja.getRange(1, 1, 1, hoja.getLastColumn()).getValues()[0];
-  if (cab.indexOf('Campaña') !== -1) return; // ya migrado
 
-  // La versión antigua tenía Documento en la col 3 y Estado en la 4:
-  // insertamos "Campaña" entre ambas y marcamos las filas existentes.
-  hoja.insertColumnAfter(3);
-  hoja.getRange(1, COL_SOL.CAMPANA).setValue('Campaña')
-      .setFontWeight('bold').setBackground('#1a73e8').setFontColor('white');
-  hoja.setColumnWidth(COL_SOL.CAMPANA, 220);
-  if (hoja.getLastRow() > 1) {
-    var n = hoja.getLastRow() - 1;
-    var valores = [];
-    for (var i = 0; i < n; i++) valores.push([SIN_CAMPANA]);
-    hoja.getRange(2, COL_SOL.CAMPANA, n, 1).setValues(valores);
+  if (cab.indexOf('Campaña') === -1) {
+    // La versión antigua tenía Documento en la col 3 y Estado en la 4:
+    // insertamos "Campaña" entre ambas y marcamos las filas existentes.
+    hoja.insertColumnAfter(3);
+    hoja.getRange(1, COL_SOL.CAMPANA).setValue('Campaña')
+        .setFontWeight('bold').setBackground('#1a73e8').setFontColor('white');
+    hoja.setColumnWidth(COL_SOL.CAMPANA, 220);
+    if (hoja.getLastRow() > 1) {
+      var n = hoja.getLastRow() - 1;
+      var valores = [];
+      for (var i = 0; i < n; i++) valores.push([SIN_CAMPANA]);
+      hoja.getRange(2, COL_SOL.CAMPANA, n, 1).setValues(valores);
+    }
+    hoja.setConditionalFormatRules([]); // las reglas antiguas apuntaban a la col 4
+    aplicarFormatoSolicitudes_(hoja);
+    cab = hoja.getRange(1, 1, 1, hoja.getLastColumn()).getValues()[0];
   }
-  hoja.setConditionalFormatRules([]); // las reglas antiguas apuntaban a la col 4
-  aplicarFormatoSolicitudes_(hoja);
+
+  if (cab.indexOf('Link correo') === -1) {
+    hoja.getRange(1, COL_SOL.LINK_CORREO).setValue('Link correo')
+        .setFontWeight('bold').setBackground('#1a73e8').setFontColor('white');
+    hoja.setColumnWidth(COL_SOL.LINK_CORREO, 220);
+  }
 }
 
 // ------------------------------------------------------------
@@ -302,7 +314,7 @@ function crearCampana(datos) {
   var hojaSol = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HOJAS.SOLICITUDES);
   var nuevas = dealers.map(function (dealer, i) {
     return ['S-' + String(hojaSol.getLastRow() + i).padStart(5, '0'),
-            dealer, documento, nombre, ESTADOS.PENDIENTE, '', '', '', '', '', '', ''];
+            dealer, documento, nombre, ESTADOS.PENDIENTE, '', '', '', '', '', '', '', ''];
   });
   hojaSol.getRange(hojaSol.getLastRow() + 1, 1, nuevas.length, nuevas[0].length).setValues(nuevas);
 
@@ -530,6 +542,8 @@ function actualizarSolicitud_(dealer, docDetectado, msg, archivos) {
   hoja.getRange(mejor.fila, COL_SOL.ESTADO).setValue(ESTADOS.RECIBIDO);
   hoja.getRange(mejor.fila, COL_SOL.FECHA_RECIBIDO).setValue(msg.getDate());
   hoja.getRange(mejor.fila, COL_SOL.ULTIMO_CONTACTO).setValue(msg.getDate());
+  hoja.getRange(mejor.fila, COL_SOL.LINK_CORREO)
+      .setValue('https://mail.google.com/mail/u/0/#all/' + msg.getThread().getId());
   if (archivos.length) {
     hoja.getRange(mejor.fila, COL_SOL.ARCHIVO).setValue(archivos.map(function (a) { return a.url; }).join('\n'));
   }
@@ -554,11 +568,12 @@ function getDashboardData() {
   var campanas = hojaAObjetos_(ss.getSheetByName(HOJAS.CAMPANAS));
 
   return {
+    version: VERSION,
     solicitudes: solicitudes,
     correos: correos.slice(0, 200),
     campanas: campanas,
     tiposDocumento: leerTiposDocumento_().map(function (t) { return t.tipo; }),
-    dealers: leerDealers_().map(function (d) { return d.nombre; }),
+    dealers: leerDealers_().map(function (d) { return { nombre: d.nombre, emails: d.emails.join(', ') }; }),
     urlSheet: ss.getUrl(),
     actualizado: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm')
   };

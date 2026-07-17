@@ -98,8 +98,10 @@ A partir de ahí todo es automático: cuando un dealer responde con el documento
 2. **Pestaña "Solicitudes"**: cuando llega un documento, su fila pasa sola a **"Recibido - Por revisar"** con el enlace al archivo en Drive. Ábrelo y:
    - Si es correcto → botón **✔ Correcto** (queda *Verificado*).
    - Si es incorrecto → botón **✖ Incorrecto**: indicas el motivo y se crea automáticamente un **borrador en Gmail** pidiendo el reenvío.
-3. **Pestaña "⚠ Seguimiento"**: dealers que llevan más de X días sin responder. El botón **✉️ Seguimiento** crea el borrador de recordatorio.
-4. **Pestaña "Correos recibidos"**: registro de todo lo que ha entrado, con enlace directo al hilo de Gmail. Marca como *gestionado* lo que ya hayas resuelto.
+3. **Pestaña "🏢 Dealers"**: monitoreo por dealer. Cada dealer aparece con un estado derivado de sus documentos — *✖ Incorrecto - reenvío pedido*, *📥 Ha respondido - por revisar*, *⏳ Sin contestar*, *✔ Completado* o *Sin solicitar* — con contadores por categoría (clic para filtrar), su email, cuántos documentos tiene verificados y el enlace a su último correo.
+4. **Pestaña "⚠ Seguimiento"**: dealers que llevan más de X días sin responder. El botón **✉️ Seguimiento** crea el borrador de recordatorio.
+5. **Pestaña "Correos recibidos"**: bandeja de correos **pendientes de gestionar**, con enlace directo al hilo de Gmail. Al pulsar *"Marcar gestionado"* el correo desaparece de la lista (queda en el histórico, visible con la casilla *"Ver gestionados"*).
+6. En las tablas de Solicitudes y Seguimiento, la columna **Correo (✉️ Abrir)** te lleva directamente al hilo de Gmail que trajo el documento.
 
 > Los correos nunca se envían solos: el sistema siempre crea **borradores** para que tú los revises y envíes. Los encontrarás en la carpeta *Borradores* de Gmail.
 
@@ -134,7 +136,11 @@ A partir de ahí todo es automático: cuando un dealer responde con el documento
 
 **Importante: el orden correcto es Dealers → Campaña → Escanear.** El escáner solo registra correos de remitentes que estén en la hoja `Dealers`, y solo actualiza estados si existe una campaña con ese documento. Si escaneas antes de crear la campaña, esos hilos quedan marcados como procesados y no se reasignarán después.
 
-**He actualizado el código, ¿y ahora?** Pega el nuevo `Code.gs`/`Dashboard.html` en el editor, guarda, ejecuta `setup()` una vez (migra lo que haga falta) y en **Implementar → Administrar implementaciones** edita la implementación y selecciona *"Nueva versión"* para que la URL sirva el código nuevo.
+**He actualizado el código, ¿y ahora?** Pega el nuevo `Code.gs`/`Dashboard.html` en el editor, guarda, ejecuta `setup()` una vez (migra lo que haga falta) y en **Implementar → Administrar implementaciones** edita la implementación y selecciona *"Nueva versión"*.
+
+> ⚠️ **El paso "Nueva versión" es obligatorio.** La URL `/exec` del dashboard sirve una versión *congelada* del código: si solo pegas y guardas, el dashboard seguirá mostrando la interfaz antigua (parecerá "fijado" o roto). Desde la v4, el propio dashboard te avisa con un banner rojo si detecta que está sirviendo una versión antigua.
+
+**El dashboard se queda congelado o no reacciona a los botones.** Casi siempre es el punto anterior (falta publicar "Nueva versión"). Si aparece un banner rojo con un error, mándalo tal cual para diagnosticarlo.
 
 ## 📁 Archivos de este repositorio
 

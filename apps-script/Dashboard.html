@@ -140,6 +140,25 @@
   .field .radio { font-size: 13px; margin-right: 14px; }
   .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
 
+  /* Banner de aviso (errores / versión antigua) */
+  #banner {
+    display: none; background: var(--surface); border: 1px solid var(--critical);
+    color: var(--critical); border-radius: 10px; padding: 10px 14px;
+    font-size: 13px; font-weight: 600; margin-bottom: 14px;
+  }
+
+  /* Chips de la pestaña Dealers */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 12px 4px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+    font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px;
+    border: 1px solid var(--border); background: var(--surface);
+  }
+  .chip:hover { border-color: var(--blue); }
+  .chip.active { outline: 2px solid var(--blue); }
+  .chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .chip .n { color: var(--ink-2); font-weight: 700; }
+
   #toast {
     position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
     background: var(--ink); color: var(--page); padding: 10px 18px;
@@ -156,9 +175,11 @@
   <span class="meta" id="updated"></span>
   <span class="spacer"></span>
   <a class="btn" id="sheetLink" target="_blank" rel="noopener">Abrir Google Sheet</a>
+  <button onclick="refrescar()">⟳ Actualizar datos</button>
   <button class="primary" id="btnScan" onclick="escanear()">🔄 Escanear correos ahora</button>
 </header>
 
+<div id="banner"></div>
 <div id="loading">Cargando datos…</div>
 
 <div id="app" style="display:none">
@@ -181,6 +202,7 @@
 
   <div class="tabs">
     <button id="tab-solicitudes" class="active" onclick="setTab('solicitudes')">Solicitudes <span class="count" id="cnt-solicitudes"></span></button>
+    <button id="tab-dealers" onclick="setTab('dealers')">🏢 Dealers <span class="count" id="cnt-dealers"></span></button>
     <button id="tab-seguimiento" onclick="setTab('seguimiento')">⚠️ Seguimiento <span class="count" id="cnt-seguimiento"></span></button>
     <button id="tab-correos" onclick="setTab('correos')">Correos recibidos <span class="count" id="cnt-correos"></span></button>
   </div>
@@ -190,6 +212,9 @@
     <select id="filtroEstado" onchange="render()">
       <option value="">Todos los estados</option>
     </select>
+    <label id="chkGestionadosWrap" style="display:none;align-items:center;gap:6px;font-size:13px;color:var(--ink-2)">
+      <input type="checkbox" id="chkGestionados" onchange="render()"> Ver gestionados
+    </label>
   </div>
 
   <div class="card"><div id="content"></div></div>
@@ -235,9 +260,29 @@
 <div id="toast"></div>
 
 <script>
+  // Debe coincidir con la constante VERSION de Code.gs: si difieren, la
+  // implementación /exec está sirviendo una versión antigua del código.
+  var VERSION = 4;
+
   var DATA = null;
   var TAB = 'solicitudes';
   var CAMPANA_SEL = ''; // '' = todas
+  var DEALER_FILTRO = ''; // filtro por estado en la pestaña Dealers
+
+  var ESTADOS_DEALER = {
+    INCORRECTO: '✖ Incorrecto - reenvío pedido',
+    POR_REVISAR: '📥 Ha respondido - por revisar',
+    SIN_CONTESTAR: '⏳ Sin contestar',
+    COMPLETADO: '✔ Completado',
+    SIN_SOLICITAR: 'Sin solicitar'
+  };
+  var COLOR_DEALER = {
+    '✖ Incorrecto - reenvío pedido': 'var(--critical)',
+    '📥 Ha respondido - por revisar': 'var(--warning)',
+    '⏳ Sin contestar': 'var(--blue)',
+    '✔ Completado': 'var(--good)',
+    'Sin solicitar': 'var(--muted)'
+  };
 
   var COLOR_ESTADO = {
     'Pendiente':               'var(--muted)',
@@ -255,6 +300,16 @@
   function cargar() {
     google.script.run.withSuccessHandler(pintar).withFailureHandler(error).getDashboardData();
   }
+  function refrescar() {
+    toast('Actualizando…');
+    cargar();
+  }
+
+  function banner(msg) {
+    var b = document.getElementById('banner');
+    b.style.display = msg ? '' : 'none';
+    b.textContent = msg || '';
+  }
 
   function pintar(data) {
     DATA = data;
@@ -262,6 +317,13 @@
     document.getElementById('app').style.display = '';
     document.getElementById('updated').textContent = 'Actualizado: ' + data.actualizado;
     document.getElementById('sheetLink').href = data.urlSheet;
+
+    if (data.version !== VERSION) {
+      banner('⚠ Este dashboard está desactualizado (interfaz v' + VERSION + ', servidor v' + (data.version || '1') +
+             '). En el editor de Apps Script: Implementar → Administrar implementaciones → ✏️ → Versión: "Nueva versión" → Implementar.');
+    } else {
+      banner('');
+    }
 
     var selE = document.getElementById('filtroEstado');
     if (selE.options.length === 1) {
@@ -344,6 +406,15 @@
   }
 
   function render() {
+    try {
+      renderInterno();
+    } catch (e) {
+      banner('⚠ Error al pintar el dashboard: ' + e.message +
+             '. Prueba a recargar la página; si persiste, publica una "Nueva versión" en Administrar implementaciones.');
+    }
+  }
+
+  function renderInterno() {
     var filasCampana = solicitudesDeCampana(CAMPANA_SEL);
     var k = kpisDe(filasCampana);
 
@@ -386,17 +457,117 @@
     document.getElementById('distBar').innerHTML = barraHtml(k);
 
     var seguimientos = filasCampana.filter(function (s) { return s['Seguimiento'] === 'SÍ'; });
-    var correosAbiertos = DATA.correos.filter(function (c) { return c['Estado'] !== 'Gestionado'; });
+    var correosPendientes = DATA.correos.filter(function (c) { return c['Estado'] !== 'Gestionado'; });
+    var dealersResumen = resumenDealers(filasCampana);
     document.getElementById('cnt-solicitudes').textContent = filasCampana.length;
+    document.getElementById('cnt-dealers').textContent = dealersResumen.length;
     document.getElementById('cnt-seguimiento').textContent = seguimientos.length;
-    document.getElementById('cnt-correos').textContent = correosAbiertos.length;
+    document.getElementById('cnt-correos').textContent = correosPendientes.length;
 
     var html = '';
     if (TAB === 'solicitudes') html = tablaSolicitudes(filtrar(filasCampana));
+    if (TAB === 'dealers') html = vistaDealers(dealersResumen);
     if (TAB === 'seguimiento') html = tablaSolicitudes(filtrar(seguimientos));
-    if (TAB === 'correos') html = tablaCorreos(filtrar(DATA.correos));
+    if (TAB === 'correos') {
+      var verGestionados = document.getElementById('chkGestionados').checked;
+      html = tablaCorreos(filtrar(verGestionados ? DATA.correos : correosPendientes));
+    }
     document.getElementById('content').innerHTML = html;
-    document.getElementById('filtroEstado').style.display = TAB === 'correos' ? 'none' : '';
+    document.getElementById('filtroEstado').style.display =
+      (TAB === 'correos' || TAB === 'dealers') ? 'none' : '';
+    document.getElementById('chkGestionadosWrap').style.display = TAB === 'correos' ? 'flex' : 'none';
+  }
+
+  // ---- Pestaña Dealers: estado derivado por dealer ----
+  function resumenDealers(filas) {
+    var porDealer = {};
+    filas.forEach(function (s) {
+      (porDealer[s['Dealer']] = porDealer[s['Dealer']] || []).push(s);
+    });
+    // En la vista "Todas las campañas" mostramos también dealers sin solicitudes
+    if (!CAMPANA_SEL) {
+      DATA.dealers.forEach(function (d) {
+        if (!porDealer[d.nombre]) porDealer[d.nombre] = [];
+      });
+    }
+    var emails = {};
+    DATA.dealers.forEach(function (d) { emails[d.nombre] = d.emails; });
+
+    return Object.keys(porDealer).sort().map(function (nombre) {
+      var rows = porDealer[nombre];
+      var n = function (estado) { return rows.filter(function (r) { return r['Estado'] === estado; }).length; };
+      var estado;
+      if (!rows.length) estado = ESTADOS_DEALER.SIN_SOLICITAR;
+      else if (n('Incorrecto - Reenviar')) estado = ESTADOS_DEALER.INCORRECTO;
+      else if (n('Recibido - Por revisar')) estado = ESTADOS_DEALER.POR_REVISAR;
+      else if (n('Solicitado')) estado = ESTADOS_DEALER.SIN_CONTESTAR;
+      else if (n('Verificado') === rows.length) estado = ESTADOS_DEALER.COMPLETADO;
+      else estado = ESTADOS_DEALER.SIN_SOLICITAR;
+
+      var ultimo = rows.map(function (r) { return String(r['Último contacto'] || ''); })
+        .filter(Boolean)
+        .sort(function (a, b) { return claveFecha(a) < claveFecha(b) ? 1 : -1; })[0] || '';
+      var link = rows.map(function (r) { return r['Link correo']; }).filter(Boolean).pop() || '';
+
+      return {
+        dealer: nombre,
+        email: emails[nombre] || '',
+        estado: estado,
+        verificados: n('Verificado'),
+        total: rows.length,
+        ultimo: ultimo,
+        link: link
+      };
+    });
+  }
+  function claveFecha(ddmmyyyy) {
+    var p = ddmmyyyy.split('/');
+    return p.length === 3 ? p[2] + p[1] + p[0] : '';
+  }
+
+  function vistaDealers(resumen) {
+    var orden = [ESTADOS_DEALER.INCORRECTO, ESTADOS_DEALER.POR_REVISAR, ESTADOS_DEALER.SIN_CONTESTAR,
+                 ESTADOS_DEALER.COMPLETADO, ESTADOS_DEALER.SIN_SOLICITAR];
+    var chips = orden.map(function (e) {
+      var cuantos = resumen.filter(function (d) { return d.estado === e; }).length;
+      var active = DEALER_FILTRO === e ? ' active' : '';
+      return '<span class="chip' + active + '" onclick="filtrarDealer(\'' + escAttr(e) + '\')">' +
+        '<span class="dot" style="background:' + COLOR_DEALER[e] + '"></span>' +
+        esc(e) + ' <span class="n">' + cuantos + '</span></span>';
+    }).join('');
+
+    var q = document.getElementById('search').value.toLowerCase();
+    var filas = resumen.filter(function (d) {
+      if (DEALER_FILTRO && d.estado !== DEALER_FILTRO) return false;
+      if (!q) return true;
+      return (d.dealer + ' ' + d.email + ' ' + d.estado).toLowerCase().indexOf(q) !== -1;
+    });
+
+    var h = '<div class="chips">' + chips + '</div>';
+    if (!filas.length) return h + '<div class="empty">No hay dealers que coincidan.</div>';
+
+    h += '<table><tr><th>Dealer</th><th>Email</th><th>Docs ✔</th><th>Estado</th><th>Último contacto</th><th>Correo</th></tr>';
+    var ordenIdx = {};
+    orden.forEach(function (e, i) { ordenIdx[e] = i; });
+    filas.sort(function (a, b) { return ordenIdx[a.estado] - ordenIdx[b.estado] || (a.dealer > b.dealer ? 1 : -1); });
+    filas.forEach(function (d) {
+      h += '<tr><td>' + esc(d.dealer) + '</td>' +
+        '<td>' + esc(d.email || '—') + '</td>' +
+        '<td class="num">' + d.verificados + '/' + d.total + '</td>' +
+        '<td><span class="badge"><span class="dot" style="background:' + COLOR_DEALER[d.estado] + '"></span>' + esc(d.estado) + '</span></td>' +
+        '<td>' + esc(d.ultimo || '—') + '</td>' +
+        '<td>' + linkCorreo(d.link) + '</td></tr>';
+    });
+    return h + '</table>';
+  }
+  function filtrarDealer(estado) {
+    DEALER_FILTRO = DEALER_FILTRO === estado ? '' : estado;
+    render();
+  }
+  function linkCorreo(url) {
+    return url
+      ? '<a href="' + esc(url) + '" target="_blank" rel="noopener">✉️ Abrir</a>'
+      : '<span style="color:var(--muted)">—</span>';
   }
 
   function filtrar(filas) {
@@ -420,7 +591,7 @@
     var conCampana = !CAMPANA_SEL;
     var h = '<table><tr><th>Dealer</th><th>Documento</th>' +
             (conCampana ? '<th>Campaña</th>' : '') +
-            '<th>Estado</th><th>Último contacto</th><th>Días</th><th>Archivo</th><th>Acciones</th></tr>';
+            '<th>Estado</th><th>Último contacto</th><th>Días</th><th>Correo</th><th>Archivo</th><th>Acciones</th></tr>';
     filas.forEach(function (s) {
       var dias = s['Días sin respuesta'];
       var archivo = s['Archivo (Drive)']
@@ -434,6 +605,7 @@
         '<td>' + badge(s['Estado']) + seg + '</td>' +
         '<td>' + esc(s['Último contacto'] || '—') + '</td>' +
         '<td class="num">' + (dias === '' ? '—' : dias) + '</td>' +
+        '<td>' + linkCorreo(s['Link correo']) + '</td>' +
         '<td>' + archivo + '</td>' +
         '<td style="white-space:nowrap">' + acciones(s) + '</td></tr>';
     });
@@ -455,16 +627,20 @@
   }
 
   function tablaCorreos(filas) {
-    if (!filas.length) return '<div class="empty">No hay correos registrados todavía. Pulsa «Escanear correos ahora».</div>';
-    var h = '<table><tr><th>Fecha</th><th>Dealer</th><th>Asunto</th><th>Documento</th><th>Adjuntos</th><th>Estado</th><th></th></tr>';
+    if (!filas.length) {
+      return '<div class="empty">No hay correos pendientes de gestionar. ' +
+             'Marca «Ver gestionados» para ver el histórico, o pulsa «Escanear correos ahora».</div>';
+    }
+    var h = '<table><tr><th>Fecha</th><th>Dealer</th><th>Asunto</th><th>Documento</th><th>Adjuntos</th><th>Gmail</th><th>Estado</th><th></th></tr>';
     filas.forEach(function (c) {
       var gestionado = c['Estado'] === 'Gestionado';
       h += '<tr' + (gestionado ? ' style="opacity:.55"' : '') + '>' +
         '<td class="num">' + esc(c['Fecha']) + '</td>' +
         '<td>' + esc(c['Dealer']) + '</td>' +
-        '<td><a href="' + esc(c['Link Gmail']) + '" target="_blank" rel="noopener">' + esc(c['Asunto'] || '(sin asunto)') + '</a></td>' +
+        '<td>' + esc(c['Asunto'] || '(sin asunto)') + '</td>' +
         '<td>' + esc(c['Documento detectado']) + '</td>' +
         '<td>' + esc(c['Adjuntos'] || '—') + '</td>' +
+        '<td>' + linkCorreo(c['Link Gmail']) + '</td>' +
         '<td>' + esc(c['Estado']) + '</td>' +
         '<td>' + (gestionado ? '' : '<button class="small" onclick="gestionado(\'' + esc(c['MessageId']) + '\')">Marcar gestionado</button>') + '</td></tr>';
     });
@@ -473,7 +649,7 @@
 
   function setTab(t) {
     TAB = t;
-    ['solicitudes', 'seguimiento', 'correos'].forEach(function (x) {
+    ['solicitudes', 'dealers', 'seguimiento', 'correos'].forEach(function (x) {
       document.getElementById('tab-' + x).classList.toggle('active', x === t);
     });
     render();
