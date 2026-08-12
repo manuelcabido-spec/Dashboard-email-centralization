@@ -1,0 +1,30 @@
+{
+ "generated_at": "2026-08-12T14:10:00Z",
+ "artifact_url": "https://claude.ai/code/artifact/d98e13e2-186e-49da-8f76-fb8ee341084c",
+ "last_run": {
+  "claap": "2026-08-12",
+  "gmail": "2026-08-12",
+  "slack": "2026-08-12"
+ },
+ "sources": [
+  {
+   "id": "claap",
+   "label": "Claap"
+  },
+  {
+   "id": "gmail",
+   "label": "Gmail"
+  },
+  {
+   "id": "slack",
+   "label": "Slack"
+  }
+ ],
+ "history": [
+  {
+   "date": "2026-08-12",
+   "abiertas": 86,
+   "gestionadas": 3
+  }
+ ]
+}

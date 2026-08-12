@@ -1,0 +1,471 @@
+<title>Radar de Compromisos</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f9f9f7;
+    --surface: #fcfcfb;
+    --surface-2: #f0efec;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --hairline: #e1e0d9;
+    --border: rgba(11, 11, 11, 0.10);
+    --accent: #2a78d6;
+    --accent-soft: rgba(42, 120, 214, 0.10);
+    --s-claap: #2a78d6;
+    --s-gmail: #eb6834;
+    --s-slack: #1baf7a;
+    --st-pend: #b34724;
+    --st-pend-bg: rgba(236, 131, 90, 0.16);
+    --st-curso: #1c5cab;
+    --st-curso-bg: rgba(42, 120, 214, 0.12);
+    --st-ok: #006300;
+    --st-ok-bg: rgba(12, 163, 12, 0.12);
+    --st-stale: #a92f2f;
+    --st-stale-bg: rgba(208, 59, 59, 0.13);
+    --st-wait: #6b5410;
+    --st-wait-bg: rgba(250, 178, 25, 0.18);
+    --shadow: 0 1px 2px rgba(11, 11, 11, 0.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0d0d0d;
+      --surface: #1a1a19;
+      --surface-2: #242423;
+      --ink: #ffffff;
+      --ink-2: #c3c2b7;
+      --muted: #898781;
+      --hairline: #2c2c2a;
+      --border: rgba(255, 255, 255, 0.10);
+      --accent: #3987e5;
+      --accent-soft: rgba(57, 135, 229, 0.16);
+      --s-claap: #3987e5;
+      --s-gmail: #d95926;
+      --s-slack: #199e70;
+      --st-pend: #f0a181;
+      --st-pend-bg: rgba(236, 131, 90, 0.16);
+      --st-curso: #86b6ef;
+      --st-curso-bg: rgba(57, 135, 229, 0.18);
+      --st-ok: #34c334;
+      --st-ok-bg: rgba(12, 163, 12, 0.18);
+      --st-stale: #ef8484;
+      --st-stale-bg: rgba(230, 103, 103, 0.16);
+      --st-wait: #fac54f;
+      --st-wait-bg: rgba(250, 178, 25, 0.14);
+      --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0d0d0d;
+    --surface: #1a1a19;
+    --surface-2: #242423;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #898781;
+    --hairline: #2c2c2a;
+    --border: rgba(255, 255, 255, 0.10);
+    --accent: #3987e5;
+    --accent-soft: rgba(57, 135, 229, 0.16);
+    --s-claap: #3987e5;
+    --s-gmail: #d95926;
+    --s-slack: #199e70;
+    --st-pend: #f0a181;
+    --st-pend-bg: rgba(236, 131, 90, 0.16);
+    --st-curso: #86b6ef;
+    --st-curso-bg: rgba(57, 135, 229, 0.18);
+    --st-ok: #34c334;
+    --st-ok-bg: rgba(12, 163, 12, 0.18);
+    --st-stale: #ef8484;
+    --st-stale-bg: rgba(230, 103, 103, 0.16);
+    --st-wait: #fac54f;
+    --st-wait-bg: rgba(250, 178, 25, 0.14);
+    --shadow: none;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.45;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 20px 64px; }
+
+  header.top {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px;
+    padding-bottom: 14px; border-bottom: 1px solid var(--hairline); margin-bottom: 20px;
+  }
+  header.top h1 { font-size: 22px; font-weight: 700; margin: 0; letter-spacing: -0.2px; }
+  header.top .sub { color: var(--ink-2); font-size: 13px; }
+  .src-chips { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+  .src-chip {
+    font-size: 12px; color: var(--ink-2); background: var(--surface);
+    border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .src-chip .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+  .kpis {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px; margin-bottom: 24px;
+  }
+  .kpi {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; box-shadow: var(--shadow);
+  }
+  .kpi .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
+  .kpi .value { font-size: 30px; font-weight: 700; margin-top: 2px; }
+  .kpi .hint { font-size: 12px; color: var(--ink-2); }
+  .kpi.warn .value { color: var(--st-stale); }
+
+  h2.section {
+    font-size: 14px; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); font-weight: 700; margin: 28px 0 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  h2.section::after { content: ""; flex: 1; border-top: 1px solid var(--hairline); }
+
+  .charts { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; }
+  @media (max-width: 720px) { .charts { grid-template-columns: 1fr; } }
+  .chart-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; box-shadow: var(--shadow); min-width: 0;
+  }
+  .chart-card h3 { margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+  .chart-card svg { width: 100%; height: auto; display: block; }
+  .chart-empty { color: var(--muted); font-size: 13px; padding: 18px 0; }
+  .legend { display: flex; gap: 14px; font-size: 12px; color: var(--ink-2); margin-top: 6px; flex-wrap: wrap; }
+  .legend .sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; margin-right: 5px; vertical-align: -1px; }
+
+  .filters {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    position: sticky; top: 0; z-index: 5;
+    background: var(--bg); padding: 10px 0; margin: 4px 0 14px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .fgroup { display: flex; gap: 4px; background: var(--surface-2); border-radius: 999px; padding: 3px; }
+  .fbtn {
+    border: 0; background: transparent; color: var(--ink-2); font: inherit; font-size: 12.5px;
+    padding: 4px 11px; border-radius: 999px; cursor: pointer; white-space: nowrap;
+  }
+  .fbtn:hover { color: var(--ink); }
+  .fbtn.on { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: var(--shadow); border: 1px solid var(--border); }
+  .search {
+    margin-left: auto; background: var(--surface); color: var(--ink);
+    border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px;
+    font: inherit; font-size: 13px; min-width: 180px;
+  }
+  .search:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .task {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; margin-bottom: 8px; box-shadow: var(--shadow);
+    display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start;
+  }
+  .task.focus-card { border-left: 3px solid var(--st-stale); }
+  .task input[type="checkbox"] {
+    width: 18px; height: 18px; margin-top: 2px; accent-color: var(--st-ok); cursor: pointer;
+  }
+  .t-title { font-size: 14.5px; font-weight: 600; }
+  .task.done-manual .t-title, .task.st-gestionado .t-title { text-decoration: line-through; text-decoration-thickness: 1px; color: var(--ink-2); }
+  .t-quote {
+    font-size: 12.5px; color: var(--ink-2); margin: 3px 0 6px;
+    border-left: 2px solid var(--hairline); padding-left: 8px; font-style: italic;
+  }
+  .t-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 12px; color: var(--muted); }
+  .pill {
+    font-size: 11px; font-weight: 600; border-radius: 999px; padding: 2px 9px;
+    display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+  }
+  .pill.p-pendiente { color: var(--st-pend); background: var(--st-pend-bg); }
+  .pill.p-en_gestion { color: var(--st-curso); background: var(--st-curso-bg); }
+  .pill.p-gestionado { color: var(--st-ok); background: var(--st-ok-bg); }
+  .pill.p-esperando { color: var(--st-wait); background: var(--st-wait-bg); }
+  .pill.p-stale { color: var(--st-stale); background: var(--st-stale-bg); }
+  .pill.p-manual { color: var(--ink-2); background: var(--surface-2); }
+  .src-badge { display: inline-flex; align-items: center; gap: 4px; color: var(--ink-2); font-weight: 500; }
+  .t-meta a { color: var(--accent); text-decoration: none; font-weight: 500; }
+  .t-meta a:hover { text-decoration: underline; }
+  .t-evidence { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .t-company { font-weight: 600; color: var(--ink-2); }
+
+  .group-head {
+    display: flex; align-items: center; gap: 8px; margin: 22px 0 10px;
+    font-size: 13px; font-weight: 700; color: var(--ink-2); cursor: pointer; user-select: none;
+  }
+  .group-head .count { color: var(--muted); font-weight: 500; }
+  .group-head .chev { transition: transform 0.15s; font-size: 11px; color: var(--muted); }
+  .group-head.collapsed .chev { transform: rotate(-90deg); }
+  .empty-note { color: var(--muted); font-size: 13px; padding: 8px 2px; }
+
+  footer.foot {
+    margin-top: 40px; padding-top: 14px; border-top: 1px solid var(--hairline);
+    font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 18px;
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1>🎯 Radar de Compromisos</h1>
+    <span class="sub" id="updated-at"></span>
+    <div class="src-chips" id="src-chips"></div>
+  </header>
+
+  <div class="kpis" id="kpis"></div>
+
+  <h2 class="section">Foco de hoy</h2>
+  <div id="focus-list"></div>
+
+  <h2 class="section">Evolución</h2>
+  <div class="charts">
+    <div class="chart-card">
+      <h3>Abiertas vs. gestionadas por día</h3>
+      <div id="trend"></div>
+      <div class="legend" id="trend-legend"></div>
+    </div>
+    <div class="chart-card">
+      <h3>Tareas abiertas por origen</h3>
+      <div id="by-source"></div>
+    </div>
+  </div>
+
+  <h2 class="section">Todos los compromisos</h2>
+  <div class="filters">
+    <div class="fgroup" id="f-status" role="group" aria-label="Filtro por estado"></div>
+    <div class="fgroup" id="f-source" role="group" aria-label="Filtro por origen"></div>
+    <input class="search" id="f-search" type="search" placeholder="Buscar dealer, persona, tema…" aria-label="Buscar" />
+  </div>
+  <div id="task-list"></div>
+
+  <footer class="foot">
+    <span>El check ✓ marca la tarea como hecha solo en este dispositivo (visual). Para un cambio permanente, díselo a Claude.</span>
+    <span id="foot-meta"></span>
+  </footer>
+</div>
+
+<script>
+const DATA = /*__DATA__*/null;
+
+const SRC_ICON = { llamada: "📞", reunion: "🎥", gmail: "✉️", slack: "💬" };
+const SRC_NAME = { claap: "Claap", gmail: "Gmail", slack: "Slack" };
+const SRC_COLOR = { claap: "var(--s-claap)", gmail: "var(--s-gmail)", slack: "var(--s-slack)" };
+const ST_LABEL = { pendiente: "Pendiente", en_gestion: "En gestión", gestionado: "Gestionado", descartado: "Descartado" };
+const STALE_DAYS = 5;
+const LS_KEY = "radar-manual-checks-v1";
+
+const now = new Date(DATA.meta.generated_at);
+const manual = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
+
+function daysAgo(dstr) {
+  return Math.max(0, Math.round((now - new Date(dstr + "T12:00:00")) / 86400000));
+}
+function ageLabel(dstr) {
+  const d = daysAgo(dstr);
+  return d === 0 ? "hoy" : d === 1 ? "hace 1 día" : `hace ${d} días`;
+}
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function kindOf(t) {
+  if (t.source !== "claap") return t.source;
+  return (t.source_label || "").toLowerCase().startsWith("reuni") ? "reunion" : "llamada";
+}
+function isOpen(t) { return t.status === "pendiente" || t.status === "en_gestion"; }
+function isStale(t) { return t.status === "pendiente" && daysAgo(t.last_seen_activity || t.date) > STALE_DAYS; }
+function effectiveDone(t) { return t.status === "gestionado" || !!manual[t.id]; }
+
+const tasks = DATA.tasks.filter(t => t.status !== "descartado");
+
+/* ---------- header ---------- */
+document.getElementById("updated-at").textContent =
+  "Última actualización: " + now.toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" }) + " · " + tasks.filter(isOpen).length + " abiertas";
+
+document.getElementById("src-chips").innerHTML = (DATA.meta.sources || []).map(s =>
+  `<span class="src-chip"><span class="dot" style="background:${SRC_COLOR[s.id] || "var(--muted)"}"></span>${esc(s.label)}</span>`
+).join("");
+
+/* ---------- KPIs ---------- */
+function kpi(label, value, hint, warn) {
+  return `<div class="kpi${warn ? " warn" : ""}"><div class="label">${label}</div><div class="value">${value}</div><div class="hint">${hint || ""}</div></div>`;
+}
+const nPend = tasks.filter(t => t.status === "pendiente" && !manual[t.id]).length;
+const nCurso = tasks.filter(t => t.status === "en_gestion" && !manual[t.id]).length;
+const nWait = tasks.filter(t => isOpen(t) && t.owner === "esperando" && !manual[t.id]).length;
+const nStale = tasks.filter(t => isStale(t) && !manual[t.id]).length;
+const nNew = tasks.filter(t => daysAgo(t.created_at || t.date) === 0).length;
+const nDone7 = tasks.filter(t => t.status === "gestionado" && daysAgo(t.last_seen_activity || t.date) <= 7).length;
+document.getElementById("kpis").innerHTML =
+  kpi("Pendientes", nPend, nWait + " esperando a otros") +
+  kpi("En gestión", nCurso, "con movimiento") +
+  kpi("Nuevas hoy", nNew, "detectadas en esta pasada") +
+  kpi("Gestionadas · 7d", nDone7, "cerradas esta semana") +
+  kpi("Estancadas", nStale, `sin actividad > ${STALE_DAYS} días`, nStale > 0);
+
+/* ---------- task card ---------- */
+function card(t, focus) {
+  const k = kindOf(t);
+  const done = effectiveDone(t);
+  const pills = [];
+  pills.push(`<span class="pill p-${t.status}">${ST_LABEL[t.status]}</span>`);
+  if (isOpen(t) && t.owner === "esperando") pills.push(`<span class="pill p-esperando">⏳ Esperando a ${esc(t.counterpart || "otros")}</span>`);
+  if (isStale(t) && !manual[t.id]) pills.push(`<span class="pill p-stale">⚠️ ${ageLabel(t.last_seen_activity || t.date)} sin actividad</span>`);
+  if (manual[t.id] && t.status !== "gestionado") pills.push(`<span class="pill p-manual">✓ marcada aquí</span>`);
+  return `<div class="task st-${t.status}${manual[t.id] ? " done-manual" : ""}${focus ? " focus-card" : ""}" data-id="${esc(t.id)}">
+    <input type="checkbox" ${done ? "checked" : ""} ${t.status === "gestionado" ? "disabled" : ""} aria-label="Marcar como hecha en este dispositivo" />
+    <div>
+      <div class="t-title">${esc(t.title)}</div>
+      ${t.quote ? `<div class="t-quote">“${esc(t.quote)}”</div>` : ""}
+      <div class="t-meta">
+        ${pills.join("")}
+        <span class="src-badge">${SRC_ICON[k] || ""} ${esc(t.source_label || SRC_NAME[t.source])}</span>
+        ${t.company ? `<span class="t-company">${esc(t.company)}</span>` : ""}
+        <span>${ageLabel(t.date)}</span>
+        ${t.due_hint ? `<span>📅 ${esc(t.due_hint)}</span>` : ""}
+        ${t.source_url ? `<a href="${esc(t.source_url)}" target="_blank" rel="noopener">Abrir fuente ↗</a>` : ""}
+      </div>
+      ${t.status_evidence ? `<div class="t-evidence">${esc(t.status_evidence)}</div>` : ""}
+    </div>
+  </div>`;
+}
+
+/* ---------- focus ---------- */
+const focus = tasks
+  .filter(t => isOpen(t) && !manual[t.id] && (isStale(t) || (t.status === "pendiente" && t.priority === "alta")))
+  .sort((a, b) => (isStale(b) - isStale(a)) || new Date(a.date) - new Date(b.date))
+  .slice(0, 8);
+document.getElementById("focus-list").innerHTML = focus.length
+  ? focus.map(t => card(t, true)).join("")
+  : `<div class="empty-note">Nada urgente ni estancado ahora mismo. 🙌</div>`;
+
+/* ---------- filters + list ---------- */
+const state = { status: "abiertas", source: "todas", q: "" };
+const F_STATUS = [["abiertas", "Abiertas"], ["pendiente", "Pendientes"], ["en_gestion", "En gestión"], ["esperando", "Esperando"], ["gestionado", "Gestionadas"], ["todas", "Todas"]];
+const F_SOURCE = [["todas", "Todos"], ["claap", "🎥📞 Claap"], ["gmail", "✉️ Gmail"], ["slack", "💬 Slack"]];
+
+function renderFilterGroup(el, defs, key) {
+  el.innerHTML = defs.map(([v, l]) => `<button class="fbtn${state[key] === v ? " on" : ""}" data-v="${v}">${l}</button>`).join("");
+  el.querySelectorAll(".fbtn").forEach(b => b.addEventListener("click", () => { state[key] = b.dataset.v; renderAll(); }));
+}
+
+function matches(t) {
+  if (state.source !== "todas" && t.source !== state.source) return false;
+  if (state.status === "abiertas" && !isOpen(t)) return false;
+  else if (state.status === "esperando" && !(isOpen(t) && t.owner === "esperando")) return false;
+  else if (["pendiente", "en_gestion", "gestionado"].includes(state.status) && t.status !== state.status) return false;
+  if (state.q) {
+    const hay = [t.title, t.quote, t.counterpart, t.company, t.source_label].join(" ").toLowerCase();
+    if (!hay.includes(state.q)) return false;
+  }
+  return true;
+}
+
+const collapsed = { gestionado: true };
+function renderList() {
+  const list = tasks.filter(matches);
+  const groups = [
+    ["pendiente", "Pendientes", list.filter(t => t.status === "pendiente")],
+    ["en_gestion", "En gestión", list.filter(t => t.status === "en_gestion")],
+    ["gestionado", "Gestionadas recientemente", list.filter(t => t.status === "gestionado")],
+  ];
+  const el = document.getElementById("task-list");
+  el.innerHTML = groups.filter(g => g[2].length).map(([id, label, items]) => {
+    items.sort((a, b) => (b.priority === "alta") - (a.priority === "alta") || new Date(b.date) - new Date(a.date));
+    const col = collapsed[id];
+    return `<div class="group-head${col ? " collapsed" : ""}" data-g="${id}" role="button" tabindex="0" aria-expanded="${!col}">
+        <span class="chev">▼</span> ${label} <span class="count">· ${items.length}</span>
+      </div>
+      <div class="group-body" data-gb="${id}" ${col ? 'style="display:none"' : ""}>${items.map(t => card(t)).join("")}</div>`;
+  }).join("") || `<div class="empty-note">Sin resultados con estos filtros.</div>`;
+
+  el.querySelectorAll(".group-head").forEach(h => {
+    const toggle = () => { collapsed[h.dataset.g] = !collapsed[h.dataset.g]; renderList(); };
+    h.addEventListener("click", toggle);
+    h.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
+  });
+  el.querySelectorAll('.task input[type="checkbox"]:not(:disabled)').forEach(cb => {
+    cb.addEventListener("change", () => {
+      const id = cb.closest(".task").dataset.id;
+      if (cb.checked) manual[id] = { ts: Date.now() }; else delete manual[id];
+      localStorage.setItem(LS_KEY, JSON.stringify(manual));
+      renderAll();
+    });
+  });
+  document.getElementById("focus-list").querySelectorAll('.task input[type="checkbox"]:not(:disabled)').forEach(cb => {
+    cb.addEventListener("change", () => {
+      const id = cb.closest(".task").dataset.id;
+      if (cb.checked) manual[id] = { ts: Date.now() }; else delete manual[id];
+      localStorage.setItem(LS_KEY, JSON.stringify(manual));
+      renderAll();
+    });
+  });
+}
+
+function renderAll() {
+  renderFilterGroup(document.getElementById("f-status"), F_STATUS, "status");
+  renderFilterGroup(document.getElementById("f-source"), F_SOURCE, "source");
+  renderList();
+}
+document.getElementById("f-search").addEventListener("input", e => { state.q = e.target.value.trim().toLowerCase(); renderList(); });
+
+/* ---------- charts ---------- */
+function renderTrend() {
+  const H = DATA.meta.history || [];
+  const el = document.getElementById("trend");
+  if (H.length < 2) {
+    el.innerHTML = `<div class="chart-empty">La serie se irá dibujando con cada actualización (${H.length}/2 puntos).</div>`;
+    return;
+  }
+  const W = 460, HT = 150, P = { l: 26, r: 10, t: 10, b: 22 };
+  const xs = i => P.l + i * (W - P.l - P.r) / (H.length - 1);
+  const max = Math.max(...H.map(d => Math.max(d.abiertas, d.gestionadas)), 1);
+  const ys = v => HT - P.b - v * (HT - P.t - P.b) / max;
+  const line = key => H.map((d, i) => `${i ? "L" : "M"}${xs(i).toFixed(1)},${ys(d[key]).toFixed(1)}`).join(" ");
+  const dots = (key, color) => H.map((d, i) =>
+    `<circle cx="${xs(i).toFixed(1)}" cy="${ys(d[key]).toFixed(1)}" r="8" fill="transparent"><title>${d.date}: ${d[key]} ${key}</title></circle>
+     <circle cx="${xs(i).toFixed(1)}" cy="${ys(d[key]).toFixed(1)}" r="3" fill="${color}" stroke="var(--surface)" stroke-width="2" pointer-events="none"/>`
+  ).join("");
+  const ticks = [0, Math.round(max / 2), max];
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${HT}" role="img" aria-label="Evolución de tareas abiertas y gestionadas">
+    ${ticks.map(v => `<line x1="${P.l}" x2="${W - P.r}" y1="${ys(v)}" y2="${ys(v)}" stroke="var(--hairline)" stroke-width="1"/>
+      <text x="${P.l - 6}" y="${ys(v) + 3.5}" text-anchor="end" font-size="10" fill="var(--muted)">${v}</text>`).join("")}
+    <path d="${line("abiertas")}" fill="none" stroke="var(--s-claap)" stroke-width="2" stroke-linecap="round"/>
+    <path d="${line("gestionadas")}" fill="none" stroke="var(--st-ok)" stroke-width="2" stroke-linecap="round"/>
+    ${dots("abiertas", "var(--s-claap)")}${dots("gestionadas", "var(--st-ok)")}
+    ${H.map((d, i) => (i === 0 || i === H.length - 1 || H.length <= 6)
+      ? `<text x="${xs(i)}" y="${HT - 6}" text-anchor="middle" font-size="10" fill="var(--muted)">${d.date.slice(5).replace("-", "/")}</text>` : "").join("")}
+  </svg>`;
+  document.getElementById("trend-legend").innerHTML =
+    `<span><span class="sw" style="background:var(--s-claap)"></span>Abiertas</span>
+     <span><span class="sw" style="background:var(--st-ok)"></span>Gestionadas (acum. día)</span>`;
+}
+
+function renderBySource() {
+  const open = tasks.filter(t => isOpen(t) && !manual[t.id]);
+  const rows = ["claap", "gmail", "slack"].map(s => ({ s, n: open.filter(t => t.source === s).length }));
+  const max = Math.max(...rows.map(r => r.n), 1);
+  const W = 300, BH = 26, GAP = 10, LBL = 64;
+  const H = rows.length * (BH + GAP);
+  document.getElementById("by-source").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Tareas abiertas por origen">
+    ${rows.map((r, i) => {
+      const y = i * (BH + GAP);
+      const w = Math.max(2, (r.n / max) * (W - LBL - 34));
+      return `<text x="0" y="${y + BH / 2 + 4}" font-size="12" fill="var(--ink-2)">${SRC_NAME[r.s]}</text>
+        <rect x="${LBL}" y="${y}" width="${w}" height="${BH}" rx="4" fill="${SRC_COLOR[r.s]}"><title>${SRC_NAME[r.s]}: ${r.n} abiertas</title></rect>
+        <text x="${LBL + w + 8}" y="${y + BH / 2 + 4}" font-size="12" font-weight="600" fill="var(--ink)">${r.n}</text>`;
+    }).join("")}
+  </svg>`;
+}
+
+/* ---------- footer ---------- */
+document.getElementById("foot-meta").textContent =
+  `${tasks.length} tareas en seguimiento · fuentes: ${(DATA.meta.sources || []).map(s => s.label).join(", ")}`;
+
+renderAll();
+renderTrend();
+renderBySource();
+</script>
