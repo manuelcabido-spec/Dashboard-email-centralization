@@ -193,6 +193,33 @@
   .t-evidence { font-size: 12px; color: var(--muted); margin-top: 4px; }
   .t-company { font-weight: 600; color: var(--ink-2); }
 
+  .t-note {
+    margin-top: 6px; font-size: 12.5px; color: var(--ink-2);
+    background: var(--st-wait-bg); border-radius: 6px; padding: 6px 9px;
+  }
+  .t-note b { color: var(--st-wait); }
+  .t-actions { display: flex; gap: 8px; margin-top: 7px; flex-wrap: wrap; }
+  .abtn {
+    font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface-2); color: var(--ink-2);
+    border-radius: 7px; padding: 4px 10px;
+  }
+  .abtn:hover { color: var(--ink); }
+  .abtn.primary { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+  .composer { margin-top: 8px; display: none; }
+  .composer.open { display: block; }
+  .composer textarea {
+    width: 100%; min-height: 72px; font: inherit; font-size: 13px; color: var(--ink);
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px;
+    resize: vertical; box-sizing: border-box;
+  }
+  .composer textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .composer .c-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; flex-wrap: wrap; }
+  .composer .c-dest { font-size: 12px; color: var(--muted); }
+  .c-status { font-size: 12px; margin-top: 4px; }
+  .c-status.ok { color: var(--st-ok); }
+  .c-status.err { color: var(--st-stale); }
+
   .group-head {
     display: flex; align-items: center; gap: 8px; margin: 22px 0 10px;
     font-size: 13px; font-weight: 700; color: var(--ink-2); cursor: pointer; user-select: none;
@@ -243,7 +270,7 @@
   <div id="task-list"></div>
 
   <footer class="foot">
-    <span>El check ✓ marca la tarea como hecha solo en este dispositivo (visual). Para un cambio permanente, díselo a Claude.</span>
+    <span>El check ✓ marca la tarea como hecha solo en este dispositivo (visual). Las notas 📝 se envían a tu Slack y el radar las incorpora en la próxima pasada. Para un cambio inmediato y permanente, díselo a Claude.</span>
     <span id="foot-meta"></span>
   </footer>
 </div>
@@ -258,8 +285,14 @@ const ST_LABEL = { pendiente: "Pendiente", en_gestion: "En gestión", gestionado
 const STALE_DAYS = 5;
 const LS_KEY = "radar-manual-checks-v1";
 
+const LS_NOTES = "radar-local-notes-v1";
+const LS_SENT = "radar-sent-actions-v1";
+const SELF_DM = "U0B2F0A6Q9L";
+
 const now = new Date(DATA.meta.generated_at);
 const manual = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
+const localNotes = JSON.parse(localStorage.getItem(LS_NOTES) || "{}");
+const sentActions = JSON.parse(localStorage.getItem(LS_SENT) || "{}");
 
 function daysAgo(dstr) {
   return Math.max(0, Math.round((now - new Date(dstr + "T12:00:00")) / 86400000));
@@ -276,8 +309,40 @@ function kindOf(t) {
   return (t.source_label || "").toLowerCase().startsWith("reuni") ? "reunion" : "llamada";
 }
 function isOpen(t) { return t.status === "pendiente" || t.status === "en_gestion"; }
-function isStale(t) { return t.status === "pendiente" && daysAgo(t.last_seen_activity || t.date) > STALE_DAYS; }
+function isSnoozed(t) { return !!t.snooze_until && new Date(t.snooze_until + "T23:59:59") >= now; }
+function isStale(t) { return t.status === "pendiente" && !isSnoozed(t) && daysAgo(t.last_seen_activity || t.date) > STALE_DAYS; }
 function effectiveDone(t) { return t.status === "gestionado" || !!manual[t.id]; }
+
+/* ---------- Slack via window.claude.mcp ---------- */
+function mcpAvailable() { return typeof window.claude !== "undefined" && window.claude.mcp !== undefined; }
+const MCP_ERR_HINT = {
+  needs_reauth: "Reconecta Slack en claude.ai → Ajustes → Conectores.",
+  server_not_connected: "Añade Slack en claude.ai → Ajustes → Conectores.",
+  not_granted: "Abre el dashboard desde claude.ai y concede acceso a Slack cuando lo pida.",
+  capability_disabled: "Este visor no permite conectar con Slack; abre la página desde claude.ai.",
+  capability_removed: "Este visor no permite conectar con Slack; abre la página desde claude.ai.",
+  blocked_by_policy: "Tu organización bloquea este envío desde la página.",
+  approval_required: "Tu organización requiere aprobación para este envío; hazlo desde Slack.",
+  selection_required: "Tienes más de un conector de Slack: elige uno cuando la página lo pregunte.",
+};
+async function sendSlack(channelId, message) {
+  if (!mcpAvailable()) {
+    return { ok: false, hint: "Abre el dashboard desde claude.ai para poder enviar a Slack." };
+  }
+  try {
+    const res = await window.claude.mcp.callTool("Slack", "slack_send_message", {
+      channel_id: channelId, message: message,
+    });
+    const p = res && res.payload;
+    return { ok: true, link: p && typeof p === "object" ? p.message_link : undefined };
+  } catch (e) {
+    const code = e && e.code;
+    if (code === "server_unavailable" || code === "upstream_error" || code === "cancelled") {
+      return { ok: false, hint: "No se pudo confirmar el envío — comprueba en Slack antes de reintentar." };
+    }
+    return { ok: false, hint: MCP_ERR_HINT[code] || (e && e.message) || "Error desconocido." };
+  }
+}
 
 const tasks = DATA.tasks.filter(t => t.status !== "descartado");
 
@@ -312,6 +377,7 @@ function card(t, focus) {
   const done = effectiveDone(t);
   const pills = [];
   pills.push(`<span class="pill p-${t.status}">${ST_LABEL[t.status]}</span>`);
+  if (isSnoozed(t)) pills.push(`<span class="pill p-esperando">⏸ En espera hasta ${esc(t.snooze_until)}</span>`);
   if (isOpen(t) && t.owner === "esperando") pills.push(`<span class="pill p-esperando">⏳ Esperando a ${esc(t.counterpart || "otros")}</span>`);
   if (isStale(t) && !manual[t.id]) pills.push(`<span class="pill p-stale">⚠️ ${ageLabel(t.last_seen_activity || t.date)} sin actividad</span>`);
   if (manual[t.id] && t.status !== "gestionado") pills.push(`<span class="pill p-manual">✓ marcada aquí</span>`);
@@ -329,18 +395,91 @@ function card(t, focus) {
         ${t.source_url ? `<a href="${esc(t.source_url)}" target="_blank" rel="noopener">Abrir fuente ↗</a>` : ""}
       </div>
       ${t.status_evidence ? `<div class="t-evidence">${esc(t.status_evidence)}</div>` : ""}
+      ${(t.user_notes || []).map(n => `<div class="t-note"><b>📝 Tu nota (${esc(n.date)}):</b> ${esc(n.text)}</div>`).join("")}
+      ${(localNotes[t.id] || []).map(n => `<div class="t-note"><b>📝 Tu nota (este dispositivo):</b> ${esc(n.text)}</div>`).join("")}
+      ${isOpen(t) ? `<div class="t-actions">
+        ${t.action ? `<button class="abtn primary" data-open="act">✍️ Mensaje preparado → ${esc(t.action.channel_name)}${sentActions[t.id] ? " · enviado ✓" : ""}</button>` : ""}
+        <button class="abtn" data-open="note">📝 Añadir nota</button>
+      </div>
+      ${t.action ? `<div class="composer" data-c="act">
+        <textarea data-role="act-text">${esc(t.action.draft)}</textarea>
+        <div class="c-row">
+          <button class="abtn primary" data-send="act">Enviar a ${esc(t.action.channel_name)}</button>
+          <span class="c-dest">Se envía por Slack con tu cuenta. Revísalo antes.</span>
+        </div>
+        <div class="c-status" data-status="act"></div>
+      </div>` : ""}
+      <div class="composer" data-c="note">
+        <textarea data-role="note-text" placeholder="Ej.: dealer de vacaciones hasta el 25/08 — en espera; documento pedido, lo tramita su gestor…"></textarea>
+        <div class="c-row">
+          <button class="abtn primary" data-send="note">Guardar nota</button>
+          <span class="c-dest">Se guarda aquí y se envía a tu Slack para que el radar la incorpore en la próxima pasada.</span>
+        </div>
+        <div class="c-status" data-status="note"></div>
+      </div>` : ""}
     </div>
   </div>`;
 }
 
+function wireComposers(root) {
+  root.querySelectorAll(".task").forEach(card => {
+    const id = card.dataset.id;
+    card.querySelectorAll("[data-open]").forEach(btn => btn.addEventListener("click", () => {
+      const c = card.querySelector(`.composer[data-c="${btn.dataset.open}"]`);
+      if (c) c.classList.toggle("open");
+    }));
+    const noteBtn = card.querySelector('[data-send="note"]');
+    if (noteBtn) noteBtn.addEventListener("click", async () => {
+      const ta = card.querySelector('[data-role="note-text"]');
+      const st = card.querySelector('[data-status="note"]');
+      const text = (ta.value || "").trim();
+      if (!text) return;
+      noteBtn.disabled = true;
+      (localNotes[id] = localNotes[id] || []).push({ text, ts: Date.now() });
+      localStorage.setItem(LS_NOTES, JSON.stringify(localNotes));
+      const r = await sendSlack(SELF_DM, `📝 Radar nota [${id}]: ${text}`);
+      st.className = "c-status " + (r.ok ? "ok" : "err");
+      st.textContent = r.ok
+        ? "Nota guardada y enviada a tu Slack ✓ — el radar la incorporará en la próxima pasada."
+        : "Nota guardada en este dispositivo, pero no llegó a Slack: " + r.hint;
+      noteBtn.disabled = false;
+      ta.value = "";
+      renderAll();
+    });
+    const actBtn = card.querySelector('[data-send="act"]');
+    if (actBtn) actBtn.addEventListener("click", async () => {
+      const ta = card.querySelector('[data-role="act-text"]');
+      const st = card.querySelector('[data-status="act"]');
+      const task = tasks.find(t => t.id === id);
+      const text = (ta.value || "").trim();
+      if (!text || !task || !task.action) return;
+      actBtn.disabled = true;
+      st.className = "c-status";
+      st.textContent = "Enviando…";
+      const r = await sendSlack(task.action.channel_id, text);
+      st.className = "c-status " + (r.ok ? "ok" : "err");
+      st.textContent = r.ok ? "Enviado ✓" + (r.link ? " — abrir en Slack: " + r.link : "") : "No enviado: " + r.hint;
+      if (r.ok) {
+        sentActions[id] = { ts: Date.now() };
+        localStorage.setItem(LS_SENT, JSON.stringify(sentActions));
+      }
+      actBtn.disabled = false;
+    });
+  });
+}
+
 /* ---------- focus ---------- */
-const focus = tasks
-  .filter(t => isOpen(t) && !manual[t.id] && (isStale(t) || (t.status === "pendiente" && t.priority === "alta")))
-  .sort((a, b) => (isStale(b) - isStale(a)) || new Date(a.date) - new Date(b.date))
-  .slice(0, 8);
-document.getElementById("focus-list").innerHTML = focus.length
-  ? focus.map(t => card(t, true)).join("")
-  : `<div class="empty-note">Nada urgente ni estancado ahora mismo. 🙌</div>`;
+function renderFocus() {
+  const focus = tasks
+    .filter(t => isOpen(t) && !manual[t.id] && !isSnoozed(t) && (isStale(t) || (t.status === "pendiente" && t.priority === "alta")))
+    .sort((a, b) => (isStale(b) - isStale(a)) || new Date(a.date) - new Date(b.date))
+    .slice(0, 8);
+  const el = document.getElementById("focus-list");
+  el.innerHTML = focus.length
+    ? focus.map(t => card(t, true)).join("")
+    : `<div class="empty-note">Nada urgente ni estancado ahora mismo. 🙌</div>`;
+  wireComposers(el);
+}
 
 /* ---------- filters + list ---------- */
 const state = { status: "abiertas", source: "todas", q: "" };
@@ -395,6 +534,14 @@ function renderList() {
       renderAll();
     });
   });
+  wireComposers(el);
+}
+
+function renderAll() {
+  renderFilterGroup(document.getElementById("f-status"), F_STATUS, "status");
+  renderFilterGroup(document.getElementById("f-source"), F_SOURCE, "source");
+  renderFocus();
+  renderList();
   document.getElementById("focus-list").querySelectorAll('.task input[type="checkbox"]:not(:disabled)').forEach(cb => {
     cb.addEventListener("change", () => {
       const id = cb.closest(".task").dataset.id;
@@ -403,12 +550,6 @@ function renderList() {
       renderAll();
     });
   });
-}
-
-function renderAll() {
-  renderFilterGroup(document.getElementById("f-status"), F_STATUS, "status");
-  renderFilterGroup(document.getElementById("f-source"), F_SOURCE, "source");
-  renderList();
 }
 document.getElementById("f-search").addEventListener("input", e => { state.q = e.target.value.trim().toLowerCase(); renderList(); });
 

@@ -33,7 +33,12 @@
   "priority": "alta",
   "id": "6b481cefdd",
   "created_at": "2026-08-10",
-  "last_seen_activity": "2026-08-10"
+  "last_seen_activity": "2026-08-10",
+  "action": {
+   "channel_id": "U07F1BR0NF8",
+   "channel_name": "Alexis Petrement (DM)",
+   "draft": "Hola Alexis. Recordatorio de Carpentum (Renting Credit): lo de los autónomos que hablasteis lo necesitan como máximo este jueves 13/08, porque se les va la persona de administración. ¿Lo tendrás para entonces?"
+  }
  },
  {
   "title": "Consultar a Compliance si Carpentum puede financiar stock de coches que no están a nombre de CARPENTUM SL",
@@ -51,7 +56,12 @@
   "priority": "alta",
   "id": "17643e8c3b",
   "created_at": "2026-08-10",
-  "last_seen_activity": "2026-08-10"
+  "last_seen_activity": "2026-08-10",
+  "action": {
+   "channel_id": "C0A7LACGD7V",
+   "channel_name": "#compliance-query-requests",
+   "draft": "Hola equipo. Consulta para CARPENTUM SL (Renting Credit): recogen coches como parte de pago que se transfieren directamente al comprador final, así que parte del stock no llega a estar a nombre de CARPENTUM SL. ¿Se podría hacer una excepción para que operen así con la financiación de stock? El dealer espera respuesta para saber cómo operar."
+  }
  },
  {
   "title": "Revisar el reenvío de leads de Auto Show Alicante y responder sobre subida de fotos desde el móvil",
@@ -105,7 +115,12 @@
   "priority": "alta",
   "id": "56c24a4aa5",
   "created_at": "2026-08-11",
-  "last_seen_activity": "2026-08-11"
+  "last_seen_activity": "2026-08-11",
+  "action": {
+   "channel_id": "C06B7KD9URG",
+   "channel_name": "#product-feedback",
+   "draft": "🚨 Urgente — fallos en Pedidos que bloquean a un dealer (reportado por Yago):\n1. La fecha de última ITV y el tipo de servicio no aparecen en los pedidos.\n2. El campo de próxima ITV solo permite hasta 2026.\n3. El correo obligatorio impide firmar y enviar los contratos ya creados.\n¿Podéis priorizarlo? No pueden enviar contratos."
+  }
  },
  {
   "title": "Cambiar el dominio de MJ's Automotor de Ocasión de vuelta a Dealcar y agendar formación con sus comerciales",
@@ -231,7 +246,12 @@
   "priority": "alta",
   "id": "ad9a094935",
   "created_at": "2026-08-12",
-  "last_seen_activity": "2026-08-12"
+  "last_seen_activity": "2026-08-12",
+  "action": {
+   "channel_id": "U083D9131BP",
+   "channel_name": "Frank Aguado (DM)",
+   "draft": "Hola Frank. Automóviles Quintana (Jose Aguilar) dice que los intereses se le han cargado al préstamo en vez de cobrarse de su cuenta bancaria. ¿Puedes mirar por qué no se ejecutó el cobro por cuenta? El dealer está esperando respuesta hoy y está bastante molesto."
+  }
  },
  {
   "title": "Reagendar la reunión con Autovettura para mañana a las 10 y enviar la invitación por correo",
@@ -717,7 +737,12 @@
   "priority": "media",
   "id": "c78d08ba1d",
   "created_at": "2026-08-11",
-  "last_seen_activity": "2026-08-11"
+  "last_seen_activity": "2026-08-11",
+  "action": {
+   "channel_id": "C06B7KD9URG",
+   "channel_name": "#product-feedback",
+   "draft": "Hola equipo — a Kairos Motor Europa le aparece desconectada la cuenta de proveedor de OpenLane aunque debería estar conectada. Es el último requisito que le falta para completar el nivel profesional. ¿Podéis revisar si es un fallo por nuestra parte?"
+  }
  },
  {
   "title": "Pedir al equipo que los coches reservados de Kairos no se despubliquen de coches.net",
@@ -735,7 +760,12 @@
   "priority": "media",
   "id": "3695cd48d0",
   "created_at": "2026-08-11",
-  "last_seen_activity": "2026-08-11"
+  "last_seen_activity": "2026-08-11",
+  "action": {
+   "channel_id": "U07F1BR0NF8",
+   "channel_name": "Alexis Petrement (DM)",
+   "draft": "Hola Alexis. Para Kairos Motor: cuando un coche pasa a reservado, ¿podemos configurar que NO se despublique de Coches.net? El dealer no quiere gastar publicaciones cada vez que una reserva se cae."
+  }
  },
  {
   "title": "Coordinar con multipublicación que el Toyota Auris de Kairos quede como publicado sin duplicarse",
@@ -753,7 +783,12 @@
   "priority": "media",
   "id": "f18b329d5a",
   "created_at": "2026-08-11",
-  "last_seen_activity": "2026-08-11"
+  "last_seen_activity": "2026-08-11",
+  "action": {
+   "channel_id": "U07F1BR0NF8",
+   "channel_name": "Alexis Petrement (DM)",
+   "draft": "Hola Alexis. Kairos Motor tiene un Toyota Auris ya publicado en Coches.net; al activar la multipublicación queremos que quede como «publicado» sin duplicar el anuncio ni gastar otra publicación. ¿Cómo lo configuramos?"
+  }
  },
  {
   "title": "Llamar a Adolfo (Vial Noroeste) para ayudarles con el CRM y la integración",
@@ -987,7 +1022,12 @@
   "priority": "media",
   "id": "308a659499",
   "created_at": "2026-08-12",
-  "last_seen_activity": "2026-08-12"
+  "last_seen_activity": "2026-08-12",
+  "action": {
+   "channel_id": "D0BEQNVG75E",
+   "channel_name": "Jorge Llerena (DM)",
+   "draft": "Jorge, ¿pudiste al final hablar con Esteban de Prodigious? Les corre prisa: la renovación vence el 20/08 y siguen con la duda del precio (13.200€ confirmado por Lucas)."
+  }
  },
  {
   "title": "Llamar a Martín Cars para aclarar el tema de los intereses",
@@ -1149,7 +1189,12 @@
   "priority": "alta",
   "id": "1484924bab",
   "created_at": "2026-08-12",
-  "last_seen_activity": "2026-08-12"
+  "last_seen_activity": "2026-08-12",
+  "action": {
+   "channel_id": "U083D9131BP",
+   "channel_name": "Frank Aguado (DM)",
+   "draft": "Hola Frank. A AUTOEXPO GARAGE SL no se le pudo cargar el recibo de la suscripción (1.662,10€) y su banco les llamó; el dealer confirma que hay saldo de sobra. ¿Puedes volver a ejecutar el cobro de la suscripción?"
+  }
  },
  {
   "title": "Pasar a riesgos la documentación recibida de Automan y perseguir lo que falta (certificado y póliza nueva)",
@@ -1167,7 +1212,12 @@
   "priority": "alta",
   "last_seen_activity": "2026-08-12",
   "id": "0d8e22074c",
-  "created_at": "2026-08-12"
+  "created_at": "2026-08-12",
+  "action": {
+   "channel_id": "C076ZLYEXSL",
+   "channel_name": "#proj-risk",
+   "draft": "Hola equipo. AUTOMAN GARAGE SL ha enviado parte de la documentación pendiente mientras su corredor tramita el certificado y la nueva póliza del seguro. ¿Podéis ir validando lo ya recibido para no bloquear la activación de la línea?"
+  }
  },
  {
   "title": "Hacer push a Prodigious Cars para que pague la renovación (13.200€)",

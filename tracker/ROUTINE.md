@@ -41,6 +41,42 @@ mantener `tracker/state/tasks.json` al día con los compromisos de Manuel Cabido
    Manuel en hilos ("le he llamado", "verificado", "enviado") son evidencia de
    gestión de tareas existentes.
 
+4bis. **Notas del usuario (self-DM).** Los mensajes del self-DM con formato
+   `📝 Radar nota [<id>]: <texto>` son notas que Manuel escribió desde el
+   dashboard (ignora `[test]`). Para cada una:
+   - Añádela a `user_notes` de la tarea con ese `id` (lista de `{"text","date"}`;
+     NUNCA borres notas anteriores). Si el id no existe, ignórala.
+   - **La nota del usuario SIEMPRE prevalece** sobre la clasificación automática.
+   - Si la nota indica espera (vacaciones, "lo tramita el gestor", "esperar a X"):
+     rellena `snooze_until` (fecha si la da; si no, +14 días) — la tarea muestra
+     "⏸ En espera" y deja de contar como estancada o de salir en el Foco.
+   - Si la nota dice que está hecho/resuelto → status `gestionado`.
+   - No proceses dos veces la misma nota (compara con las `user_notes` ya guardadas).
+
+4ter. **Borradores de acción (`action`).** Para tareas abiertas con `owner:
+   "manuel"` cuya siguiente acción es levantar algo internamente por Slack
+   (escalar a producto, pagos, riesgos, compliance, pedir algo a un compañero),
+   genera o refresca el campo `action`:
+   ```json
+   "action": {"channel_id": "C…|U…", "channel_name": "#canal o Nombre", "draft": "mensaje listo para enviar"}
+   ```
+   - Redacta el borrador en el tono de Manuel (directo, español, con el dealer y
+     el contexto concretos). El dashboard lo muestra editable y Manuel lo envía
+     con su cuenta desde la propia página.
+   - Cuando dudes del procedimiento o del destino, consulta Notion
+     (`notion-search`: es el cerebro de procedimientos de INFINIT — p. ej.
+     "Resolve SEPA mandate issues", "Active DD SEPA Mandates", trackers de
+     WhatsApp) y usa `slack_search_channels`/`slack_search_users`.
+   - Destinos conocidos: equipo CSM `C0BK6D47X9B`; Jorge Llerena `D0BEQNVG75E`;
+     Lucas Enríquez `D0B6XUA83DM`; Alexis Petrement (producto) `U07F1BR0NF8`;
+     Frank Aguado (pagos) `U083D9131BP`; #product-feedback `C06B7KD9URG`;
+     #proj-helpdesk `C08NBUF336G`; #proj-risk `C076ZLYEXSL`;
+     #compliance-query-requests `C0A7LACGD7V`.
+   - Si detectas en Slack que el mensaje ya se envió (aparece un mensaje de
+     Manuel equivalente), actualiza la tarea a `en_gestion` con evidencia y
+     elimina el campo `action`.
+   - No inventes datos en los borradores: usa solo lo que está en la tarea/fuentes.
+
 5. **Fusión con `tasks.json`.** Reglas:
    - Cada tarea conserva su `id` para siempre (el marcado manual del navegador
      depende de él). NUNCA cambies el `id` de una tarea existente.
@@ -105,9 +141,13 @@ Manuel, notificaciones automáticas.
   "status": "pendiente|en_gestion|gestionado|descartado",
   "status_evidence": "por qué ese status, o null",
   "owner": "manuel|esperando",
-  "priority": "alta|media|baja"
+  "priority": "alta|media|baja",
+  "user_notes": [{"text": "nota escrita por Manuel", "date": "YYYY-MM-DD"}],
+  "snooze_until": "YYYY-MM-DD o ausente",
+  "action": {"channel_id": "...", "channel_name": "...", "draft": "..."}
 }
 ```
+(`user_notes`, `snooze_until` y `action` son opcionales.)
 
 ## REGLA DE SEGURIDAD (crítica)
 
