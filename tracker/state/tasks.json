@@ -697,13 +697,14 @@
   "company": "Tu Coche Ideal",
   "date": "2026-08-10",
   "due_hint": null,
-  "status": "pendiente",
-  "status_evidence": "Manuel se ofreció a hacer la demo; falta que Jorge agende la reunión.",
-  "owner": "esperando",
+  "status": "en_gestion",
+  "status_evidence": "Hablaron por teléfono el 13/08: Adolfo está fuera hasta el 24 y Manuel se va de vacaciones entonces; reunión completa (demo + migración de Dealcar + subir a nivel profesional) apuntada para el 1 de septiembre",
+  "owner": "manuel",
   "priority": "media",
   "id": "1b10aac4e6",
   "created_at": "2026-08-10",
-  "last_seen_activity": "2026-08-10"
+  "last_seen_activity": "2026-08-13",
+  "snooze_until": "2026-08-31"
  },
  {
   "title": "Confirmar disponibilidad del dominio kairosmotor.com y gestionar su compra y conexión",
@@ -1114,7 +1115,7 @@
   "date": "2026-08-10",
   "due_hint": "Deadline jueves 13/08: sin firma, la línea queda bloqueada; ninguno ha respondido aún",
   "status": "en_gestion",
-  "status_evidence": "Deadline HOY 13/08. César (L'Equipe Motor) respondió 'Firmado' pero no firmó los 3 campos y no consta como firmado; Manuel se lo reenvió y Joan Tubella está ayudando",
+  "status_evidence": "L'Equipe Motor (César Navarro) completó la firma el 13/08 a las 16:39 (PandaDoc, todos los participantes). Siguen pendientes el resto: AL Garage Málaga, Ideality Cars, Autosprint, Autos Ávila Sur, Carsauto",
   "owner": "esperando",
   "priority": "alta",
   "id": "e01f66905c",
@@ -2003,6 +2004,29 @@
   "owner": "manuel",
   "priority": "alta",
   "id": "a5e97d1c69",
+  "created_at": "2026-08-13",
+  "last_seen_activity": "2026-08-13"
+ },
+ {
+  "title": "Pedir a Producto poder añadir ingresos por vehículo (comisión de financiera), no solo gastos",
+  "quote": "Si yo quiero poner que la financiera me ha dado 1.700 euros de comisión, no puedo añadirle ingresos, solo gastos. — Eso lo voy a consultar con Producto.",
+  "source": "claap",
+  "source_url": "https://app.claap.io/manuel-cabido-x-adolfo-ruiperez-13-08-2026-c-PzY2TjQGaI-ZL1yq3F66dm9",
+  "source_label": "Llamada con Adolfo Ruiperez (Tu Coche Ideal) · 13 ago",
+  "counterpart": "Adolfo Ruiperez / Producto",
+  "company": "CONCESIONARIO TU COCHE IDEAL SL",
+  "date": "2026-08-13",
+  "due_hint": null,
+  "status": "pendiente",
+  "status_evidence": "Importante para el dealer: sin ingresos por vehículo el margen real no cuadra",
+  "owner": "manuel",
+  "priority": "media",
+  "action": {
+   "channel_id": "C06B7KD9URG",
+   "channel_name": "#product-feedback",
+   "draft": "Hola equipo. Petición de Tu Coche Ideal (y aplicable a cualquier dealer): en la ficha del vehículo se pueden añadir gastos, pero no ingresos — p. ej. la comisión que le da la financiera (1.500-1.700€) por operación. Sin eso el margen por coche no refleja la realidad. ¿Se podría añadir un campo de ingresos/abonos por vehículo?"
+  },
+  "id": "4a8cdd6ae2",
   "created_at": "2026-08-13",
   "last_seen_activity": "2026-08-13"
  }
