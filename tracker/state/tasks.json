@@ -263,13 +263,13 @@
   "company": "AUTOVETTURA 2012 SL",
   "date": "2026-08-12",
   "due_hint": "mañana",
-  "status": "pendiente",
-  "status_evidence": "Segunda vez que se reagenda esta reunión (ya se movió el 11/08)",
+  "status": "gestionado",
+  "status_evidence": "La reunión se hizo por teléfono el 13/08 (Juan Luis estaba en carretera): web repasada, revisará cambios el fin de semana",
   "owner": "manuel",
   "priority": "alta",
   "id": "8ac54333b9",
   "created_at": "2026-08-12",
-  "last_seen_activity": "2026-08-12"
+  "last_seen_activity": "2026-08-13"
  },
  {
   "title": "Reagendar reunión con Autos JM para el viernes 11 de septiembre por la mañana",
@@ -395,7 +395,14 @@
   "priority": "media",
   "id": "d6f1e9ebea",
   "created_at": "2026-08-04",
-  "last_seen_activity": "2026-08-04"
+  "last_seen_activity": "2026-08-13",
+  "user_notes": [
+   {
+    "text": "Vacaciones hasta finales de Agosto",
+    "date": "2026-08-13"
+   }
+  ],
+  "snooze_until": "2026-08-31"
  },
  {
   "title": "Ayudar a Alvaro a conectar el número del asistente de IA cuando lo reciba",
@@ -449,10 +456,17 @@
   "priority": "media",
   "id": "647e8d9829",
   "created_at": "2026-08-06",
-  "last_seen_activity": "2026-08-06"
+  "last_seen_activity": "2026-08-13",
+  "user_notes": [
+   {
+    "text": "Vacaciones hasta finales de Agosto",
+    "date": "2026-08-13"
+   }
+  ],
+  "snooze_until": "2026-08-31"
  },
  {
-  "title": "Tener la reunión con Gasauto Automóviles para revisar herramientas y funcionalidades",
+  "title": "Hacer follow-up a Gasauto Automóviles tras la reunión de herramientas",
   "quote": "Tener la reunión programada para revisar herramientas y funcionalidades.",
   "source": "slack",
   "source_url": "https://infinit-com.slack.com/archives/D0B2F0C1R9C/p1786041185908249",
@@ -461,13 +475,19 @@
   "company": "GASAUTO AUTOMOVILES SL",
   "date": "2026-08-06",
   "due_hint": null,
-  "status": "pendiente",
-  "status_evidence": null,
+  "status": "en_gestion",
+  "status_evidence": "Nota de Manuel (13/08): reunión celebrada, pendiente follow-up",
   "owner": "manuel",
   "priority": "media",
   "id": "c7583cb183",
   "created_at": "2026-08-06",
-  "last_seen_activity": "2026-08-06"
+  "last_seen_activity": "2026-08-13",
+  "user_notes": [
+   {
+    "text": "Tuve la reunión con él. Voy a hacer follow up.",
+    "date": "2026-08-13"
+   }
+  ]
  },
  {
   "title": "Programar follow-up con MDG Car Center para después de vacaciones",
@@ -503,7 +523,7 @@
   "priority": "media",
   "id": "6575a20434",
   "created_at": "2026-08-07",
-  "last_seen_activity": "2026-08-07"
+  "last_seen_activity": "2026-08-13"
  },
  {
   "title": "Crear el flujo de telefonía de Auto Show cuando le asignen el número solicitado",
@@ -660,12 +680,12 @@
   "date": "2026-08-10",
   "due_hint": "Renovación cercana",
   "status": "pendiente",
-  "status_evidence": null,
+  "status_evidence": "Llamadas del 13/08 trataron el tema de auditorías; la renovación sigue sin hablarse — el gerente (Andrés) está de vacaciones hasta septiembre",
   "owner": "manuel",
   "priority": "media",
   "id": "87887c9da0",
   "created_at": "2026-08-10",
-  "last_seen_activity": "2026-08-10"
+  "last_seen_activity": "2026-08-13"
  },
  {
   "title": "Hacer demo de CRM a Tu Coche Ideal (Adolfo) cuando Jorge agende la reunión",
@@ -824,7 +844,7 @@
   "priority": "media",
   "id": "9bcbf9f2c3",
   "created_at": "2026-08-11",
-  "last_seen_activity": "2026-08-11"
+  "last_seen_activity": "2026-08-13"
  },
  {
   "title": "Confirmar con Jose Antonio que envió el email 2FA desde el correo asociado a su cuenta de Coches.net",
@@ -854,13 +874,13 @@
   "company": null,
   "date": "2026-08-11",
   "due_hint": null,
-  "status": "pendiente",
-  "status_evidence": "Giancarlo quedó en enviar instrucciones para editar plantillas en el Meta app de INFINIT",
+  "status": "en_gestion",
+  "status_evidence": "13/08: Andrés está con las plantillas de Meta; Manuel pidió además una genérica para abrir conversación cuando los dealers no cogen el teléfono",
   "owner": "manuel",
   "priority": "baja",
   "id": "81269a46c5",
   "created_at": "2026-08-11",
-  "last_seen_activity": "2026-08-11"
+  "last_seen_activity": "2026-08-13"
  },
  {
   "title": "Confirmar a Auto Draft responsable y fechas de plantillas personalizadas, doc de protección de datos y contrato de venta a particular",
@@ -1017,12 +1037,12 @@
   "date": "2026-08-12",
   "due_hint": null,
   "status": "pendiente",
-  "status_evidence": "Jorge intentó llamar el 12 ago 13:48 pero el dealer no lo cogió; sigue pendiente el contacto.",
+  "status_evidence": "13/08 10:52: Jorge confirmó 'Sí, ahora les llamo'",
   "owner": "esperando",
   "priority": "media",
   "id": "308a659499",
   "created_at": "2026-08-12",
-  "last_seen_activity": "2026-08-12",
+  "last_seen_activity": "2026-08-13",
   "action": {
    "channel_id": "D0BEQNVG75E",
    "channel_name": "Jorge Llerena (DM)",
@@ -1094,12 +1114,12 @@
   "date": "2026-08-10",
   "due_hint": "Deadline jueves 13/08: sin firma, la línea queda bloqueada; ninguno ha respondido aún",
   "status": "en_gestion",
-  "status_evidence": "Manuel envió el requerimiento el 10/08 a 6+ dealers; sin respuesta de la mayoría",
+  "status_evidence": "Deadline HOY 13/08. César (L'Equipe Motor) respondió 'Firmado' pero no firmó los 3 campos y no consta como firmado; Manuel se lo reenvió y Joan Tubella está ayudando",
   "owner": "esperando",
   "priority": "alta",
   "id": "e01f66905c",
   "created_at": "2026-08-10",
-  "last_seen_activity": "2026-08-10"
+  "last_seen_activity": "2026-08-13"
  },
  {
   "title": "Seguir la verificación de la cuenta Meta de Carpentum y avisar a Alexis cuando esté verificada",
@@ -1464,12 +1484,12 @@
   "date": "2026-08-11",
   "due_hint": "mañana",
   "status": "en_gestion",
-  "status_evidence": "El dealer le pidió que le llamara el 11/08 a las 16h; inventario ya limpio, falta acuerdo verbal de condiciones",
+  "status_evidence": "13/08: Manuel intentó llamar a los dealers de condiciones y ninguno lo cogió",
   "owner": "manuel",
   "priority": "media",
   "id": "0356539267",
   "created_at": "2026-08-11",
-  "last_seen_activity": "2026-08-11"
+  "last_seen_activity": "2026-08-13"
  },
  {
   "title": "Reintentar llamada a Jose Miguel (condiciones multiposting)",
@@ -1482,12 +1502,12 @@
   "date": "2026-08-11",
   "due_hint": "esta semana",
   "status": "en_gestion",
-  "status_evidence": "Primera llamada sin respuesta el 11/08; volverá a intentarlo",
+  "status_evidence": "13/08: buzón de voz de nuevo; Andrés confirmó los portales que usan",
   "owner": "manuel",
   "priority": "media",
   "id": "ef0d765270",
   "created_at": "2026-08-11",
-  "last_seen_activity": "2026-08-11"
+  "last_seen_activity": "2026-08-13"
  },
  {
   "title": "Volver a llamar al dealer antiguo cuyo email 2FA a Coches.net salió mal y reenviarlo con el enlace preparado",
@@ -1835,5 +1855,155 @@
   "id": "fc4b9bad59",
   "created_at": "2026-08-12",
   "last_seen_activity": "2026-08-12"
+ },
+ {
+  "title": "Enviar a Félix (Loñana Sport) por WhatsApp cómo extender la auditoría desde la plataforma",
+  "quote": "Me guardas y hablamos por WhatsApp y yo te enseño cómo se puede desde la plataforma extender la auditoría.",
+  "source": "claap",
+  "source_url": "https://app.claap.io/felix-felix-x-manuel-cabido-13-08-2026-c-PzY2TjQGaI-vieDbqF5wFkG",
+  "source_label": "Llamada con Félix (Loñana Sport) · 13 ago",
+  "counterpart": "Félix",
+  "company": "Loñana Sport 2007 SL",
+  "date": "2026-08-13",
+  "due_hint": "hoy",
+  "status": "pendiente",
+  "status_evidence": null,
+  "owner": "manuel",
+  "priority": "alta",
+  "id": "1c1b0f8219",
+  "created_at": "2026-08-13",
+  "last_seen_activity": "2026-08-13"
+ },
+ {
+  "title": "Avisar a riesgos: extender la auditoría del Audi RS6 de Loñana (en taller asociado ~1 semana)",
+  "quote": "No es un aparcamiento público, es un taller… en cuanto tenga la pieza, saldrá… — Darte un plazo de una semana, dos semanas. Se lo comento ahora al equipo.",
+  "source": "claap",
+  "source_url": "https://app.claap.io/felix-felix-x-manuel-cabido-13-08-2026-c-PzY2TjQGaI-vieDbqF5wFkG",
+  "source_label": "Llamada con Félix (Loñana Sport) · 13 ago",
+  "counterpart": "Equipo de riesgos",
+  "company": "Loñana Sport 2007 SL",
+  "date": "2026-08-13",
+  "due_hint": "hoy",
+  "status": "pendiente",
+  "status_evidence": "Las 'auditorías desde aparcamiento público' de Avda. Picasso 6 son un taller asociado; el RS6 sale en ~1 semana",
+  "owner": "manuel",
+  "priority": "alta",
+  "action": {
+   "channel_id": "C076ZLYEXSL",
+   "channel_name": "#proj-risk",
+   "draft": "Hola equipo. Sobre las auditorías de Loñana Sport 2007 SL desde Avda. Picasso 6: he hablado con el dealer y no es un aparcamiento público, es un taller asociado donde tienen el Audi RS6 en reparación (sale en ~1 semana, según recambio). Les he indicado cómo pedir la extensión de auditoría desde la plataforma — ¿podéis extender la fecha para que la pasen ya en su tienda?"
+  },
+  "id": "45c80fdd12",
+  "created_at": "2026-08-13",
+  "last_seen_activity": "2026-08-13"
+ },
+ {
+  "title": "Agendar en septiembre la reunión de plataforma con Andrés (gerente de Loñana Sport)",
+  "quote": "Yo me estoy de vacaciones… A partir de septiembre, todo si quieres.",
+  "source": "claap",
+  "source_url": "https://app.claap.io/manuel-cabido-x-andres-lopez-castillo-13-08-2026-c-PzY2TjQGaI-9urrgxmw0sDR",
+  "source_label": "Llamada con Andrés López (Loñana Sport) · 13 ago",
+  "counterpart": "Andrés López Castillo",
+  "company": "Loñana Sport 2007 SL",
+  "date": "2026-08-13",
+  "due_hint": "septiembre",
+  "status": "pendiente",
+  "status_evidence": "De vacaciones hasta septiembre; aprovechar para tratar también la renovación",
+  "owner": "manuel",
+  "priority": "media",
+  "snooze_until": "2026-09-01",
+  "id": "7778e78fcb",
+  "created_at": "2026-08-13",
+  "last_seen_activity": "2026-08-13"
+ },
+ {
+  "title": "Trasladar al equipo web los datos de Autovettura: horario L-V 10-14 y 17-20 (sábado cita previa) y garantía 2 años en coches <5 años y <100.000 km",
+  "quote": "Es de 10 a 2 y de 5 a 8 de lunes a viernes. Y sábado cita previa… la garantía hasta dos años… en coches que no tengan más de 5 años y más de 100.000 kilómetros.",
+  "source": "claap",
+  "source_url": "https://app.claap.io/manuel-cabido-x-autovettura-2012-sl-13-08-2026-c-PzY2TjQGaI-vs2TrPrhr26V",
+  "source_label": "Llamada con Juan Luis (Autovettura) · 13 ago",
+  "counterpart": "Juan Luis",
+  "company": "AUTOVETTURA 2012 SL",
+  "date": "2026-08-13",
+  "due_hint": "esta semana",
+  "status": "pendiente",
+  "status_evidence": null,
+  "owner": "manuel",
+  "priority": "media",
+  "id": "ec8719dd29",
+  "created_at": "2026-08-13",
+  "last_seen_activity": "2026-08-13"
+ },
+ {
+  "title": "Esperar el correo de Juan Luis (Autovettura) con los cambios de la web y cerrarlo la próxima semana",
+  "quote": "Este fin de semana me pongo con ello. La miro bien, de arriba abajo… te pongo un correo y te digo las cosas que cambiaría.",
+  "source": "claap",
+  "source_url": "https://app.claap.io/manuel-cabido-x-autovettura-2012-sl-13-08-2026-c-PzY2TjQGaI-vs2TrPrhr26V",
+  "source_label": "Llamada con Juan Luis (Autovettura) · 13 ago",
+  "counterpart": "Juan Luis",
+  "company": "AUTOVETTURA 2012 SL",
+  "date": "2026-08-13",
+  "due_hint": "lunes 17/08",
+  "status": "pendiente",
+  "status_evidence": "Si el lunes no llega el correo, perseguirlo",
+  "owner": "esperando",
+  "priority": "media",
+  "id": "725c6436d1",
+  "created_at": "2026-08-13",
+  "last_seen_activity": "2026-08-13"
+ },
+ {
+  "title": "Conseguir las credenciales del dominio de Autovettura para conectar su web",
+  "quote": "Lo que necesito es que me pases las credenciales de tu dominio y yo te la conecto.",
+  "source": "claap",
+  "source_url": "https://app.claap.io/manuel-cabido-x-autovettura-2012-sl-13-08-2026-c-PzY2TjQGaI-vs2TrPrhr26V",
+  "source_label": "Llamada con Juan Luis (Autovettura) · 13 ago",
+  "counterpart": "Juan Luis",
+  "company": "AUTOVETTURA 2012 SL",
+  "date": "2026-08-13",
+  "due_hint": null,
+  "status": "pendiente",
+  "status_evidence": null,
+  "owner": "esperando",
+  "priority": "media",
+  "id": "32080c1bcb",
+  "created_at": "2026-08-13",
+  "last_seen_activity": "2026-08-13"
+ },
+ {
+  "title": "Revisar el bloqueo de cuenta de MEINCAR (según Jorge, ya realizaron los pagos)",
+  "quote": "Puedes ayudarme con MEINCAR? Tienen la cuenta bloqueada. Y han realizado los pagos me comentan. — Lo miro ahora!",
+  "source": "slack",
+  "source_url": "https://infinit-com.slack.com/archives/D0BEQNVG75E/p1786611126756299",
+  "source_label": "Slack DM Jorge Llerena · 13 ago",
+  "counterpart": "Jorge Llerena",
+  "company": "MEINCAR",
+  "date": "2026-08-13",
+  "due_hint": "hoy",
+  "status": "en_gestion",
+  "status_evidence": "Manuel respondió 'Lo miro ahora' (13/08 11:05)",
+  "owner": "manuel",
+  "priority": "alta",
+  "id": "f7869f3043",
+  "created_at": "2026-08-13",
+  "last_seen_activity": "2026-08-13"
+ },
+ {
+  "title": "Habilitar a Motorevo la descarga de facturas de comisiones y adelantar las de junio a agosto",
+  "quote": "Intento sacar las facturas tanto de cargos como de abonos de comisiones, pero no me lo permite, me lo podéis habilitar por favor? y adelantar las facturas de junio 2026 a agosto 2026",
+  "source": "gmail",
+  "source_url": "https://mail.google.com/mail/u/0/#all/19ff9d37fcce4fe5",
+  "source_label": "Email de Finanzas Motorevo · 13 ago",
+  "counterpart": "Finanzas Motorevo",
+  "company": "MOTOREVO / INFINITY CARS SELECTION",
+  "date": "2026-08-13",
+  "due_hint": null,
+  "status": "pendiente",
+  "status_evidence": "Email del 13/08 6:33 sin responder",
+  "owner": "manuel",
+  "priority": "alta",
+  "id": "a5e97d1c69",
+  "created_at": "2026-08-13",
+  "last_seen_activity": "2026-08-13"
  }
 ]
