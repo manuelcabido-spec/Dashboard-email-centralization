@@ -24,14 +24,18 @@
 
 // Debe coincidir con la constante VERSION de Dashboard.html: si el dashboard
 // muestra el aviso de versión, falta publicar "Nueva versión" en Implementar.
-var VERSION = 4;
+var VERSION = 5;
 
 var HOJAS = {
   DEALERS: 'Dealers',
   CAMPANAS: 'Campañas',
   SOLICITUDES: 'Solicitudes',
   CORREOS: 'Correos',
-  CONFIG: 'Config'
+  CONFIG: 'Config',
+  INTERACCIONES: 'Interacciones',
+  TAREAS: 'Tareas',
+  TICKETS: 'Tickets',
+  MENSAJES: 'Mensajes'
 };
 
 var ESTADOS = {
@@ -72,6 +76,43 @@ var COL_COR = {
   ADJUNTOS: 6, ESTADO: 7, LINK: 8, THREAD_ID: 9, MESSAGE_ID: 10
 };
 
+// ---- Módulo CSM: llamadas segmentadas, tickets y mensajes con revisión ----
+
+var SEGMENTOS = {
+  ENABLEMENT: 'Enablement',   // reuniones de activación de capabilities (tracker de Notion)
+  TICKET: 'Ticket',           // soporte de producto (canal ES-TICKETS)
+  WEBSITE: 'Website',         // cambios de web (chat dealer-website-creation)
+  COMPLIANCE: 'Compliance',   // auditorías, línea bloqueada… (compliance-ops)
+  OTRO: 'Otro'
+};
+
+var TIPOS_INTERACCION = ['Llamada', 'Reunión', 'WhatsApp', 'Email', 'Slack'];
+
+// Features del Summer Enablement Tracker de Notion (multi-select "Feature")
+var FEATURES_ENABLEMENT = ['Website', 'Multiposting', 'Voice AI', 'Whatsapp API', 'CRM',
+                           'Accounting Integration', 'Invoicing', 'Background AI', 'Custom AI Agent', 'Custom Templates'];
+
+var ESTADOS_TICKET = { ABIERTO: 'Abierto', EN_CURSO: 'En curso', ESPERANDO: 'Esperando dealer', RESUELTO: 'Resuelto' };
+var ESTADOS_MENSAJE = { BORRADOR: 'Borrador', APROBADO: 'Aprobado', ENVIADO: 'Enviado' };
+var ESTADO_NOTION = { PENDIENTE: 'Pendiente', SINCRONIZADO: 'Sincronizado', NA: 'N/A' };
+
+// Destinos de mensaje → clave de Config con el ID del canal de Slack
+var DESTINOS_SLACK = {
+  'ES-TICKETS': 'SLACK_CANAL_TICKETS',
+  'dealer-website-creation': 'SLACK_CANAL_WEBSITE',
+  'compliance-ops': 'SLACK_CANAL_COMPLIANCE'
+};
+var DESTINO_GMAIL = 'Gmail (dealer)';
+
+var COL_INT = { ID: 1, FECHA: 2, DEALER: 3, TIPO: 4, SEGMENTO: 5, FEATURES: 6,
+                RESUMEN: 7, ACUERDOS: 8, ESTADO_NOTION: 9, NOTAS: 10 };
+var COL_TAR = { ID: 1, INTERACCION: 2, DEALER: 3, QUIEN: 4, DESCRIPCION: 5,
+                FECHA_LIMITE: 6, ESTADO: 7, SEGMENTO: 8 };
+var COL_TIC = { ID: 1, FECHA: 2, DEALER: 3, ORIGEN: 4, TIPOLOGIA: 5, DESCRIPCION: 6,
+                ESTADO: 7, CANAL: 8, TS: 9, ACTUALIZADO: 10, NOTAS: 11 };
+var COL_MSG = { ID: 1, FECHA: 2, DESTINO: 3, RELACION: 4, TEXTO: 5, ESTADO: 6,
+                CANAL_ID: 7, THREAD_TS: 8, ENVIADO: 9, RESPUESTAS: 10 };
+
 // ------------------------------------------------------------
 // SETUP INICIAL (re-ejecutable: no borra datos existentes)
 // ------------------------------------------------------------
@@ -86,6 +127,11 @@ function setup() {
   crearHojaCampanas_(ss);
   crearHojaSolicitudes_(ss);
   crearHojaCorreos_(ss);
+  crearHojaInteracciones_(ss);
+  crearHojaTareas_(ss);
+  crearHojaTickets_(ss);
+  crearHojaMensajes_(ss);
+  asegurarConfigCSM_(ss);
   migrarEsquema_(ss);
 
   // Etiquetas de Gmail
@@ -98,7 +144,7 @@ function setup() {
   }
 
   var hojaDefecto = ss.getSheetByName('Hoja 1') || ss.getSheetByName('Sheet1');
-  if (hojaDefecto && ss.getSheets().length > 5) ss.deleteSheet(hojaDefecto);
+  if (hojaDefecto && ss.getSheets().length > 9) ss.deleteSheet(hojaDefecto);
 
   try {
     SpreadsheetApp.getUi().alert(
@@ -567,6 +613,13 @@ function getDashboardData() {
   correos.reverse(); // más recientes primero
   var campanas = hojaAObjetos_(ss.getSheetByName(HOJAS.CAMPANAS));
 
+  var interacciones = hojaAObjetos_(ss.getSheetByName(HOJAS.INTERACCIONES));
+  interacciones.reverse(); // más recientes primero
+  var tickets = hojaAObjetos_(ss.getSheetByName(HOJAS.TICKETS));
+  tickets.reverse();
+  var mensajes = hojaAObjetos_(ss.getSheetByName(HOJAS.MENSAJES));
+  mensajes.reverse();
+
   return {
     version: VERSION,
     solicitudes: solicitudes,
@@ -574,6 +627,20 @@ function getDashboardData() {
     campanas: campanas,
     tiposDocumento: leerTiposDocumento_().map(function (t) { return t.tipo; }),
     dealers: leerDealers_().map(function (d) { return { nombre: d.nombre, emails: d.emails.join(', ') }; }),
+    interacciones: interacciones.slice(0, 300),
+    tareas: hojaAObjetos_(ss.getSheetByName(HOJAS.TAREAS)),
+    tickets: tickets.slice(0, 300),
+    mensajes: mensajes.slice(0, 200),
+    agendaHoy: getAgendaHoy_(),
+    finDeDia: componerFinDeDia_(),
+    tipologias: leerTipologias_(),
+    segmentos: [SEGMENTOS.ENABLEMENT, SEGMENTOS.TICKET, SEGMENTOS.WEBSITE, SEGMENTOS.COMPLIANCE, SEGMENTOS.OTRO],
+    tiposInteraccion: TIPOS_INTERACCION,
+    features: FEATURES_ENABLEMENT,
+    destinosSlack: Object.keys(DESTINOS_SLACK),
+    slackOk: !!slackToken_(),
+    notionOk: !!notionToken_() && !!String(getConfig_('NOTION_DB_TRACKER') || '').trim(),
+    hoy: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy'),
     urlSheet: ss.getUrl(),
     actualizado: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm')
   };
@@ -695,16 +762,24 @@ function escanearAhora() {
 // TRIGGERS
 // ------------------------------------------------------------
 
-/** Instala la automatización: escaneo cada 10 minutos + recálculo de seguimientos cada mañana. */
+/**
+ * Instala la automatización: escaneo cada 10 minutos, seguimientos cada mañana,
+ * lectura de respuestas de Slack cada 15 min (no hace nada sin token) y
+ * borrador de fin de día a las 18:00.
+ */
 function instalarTriggers() {
   ScriptApp.getProjectTriggers().forEach(function (t) {
-    if (['procesarCorreos', 'actualizarSeguimientos'].indexOf(t.getHandlerFunction()) !== -1) {
+    if (['procesarCorreos', 'actualizarSeguimientos', 'refrescarRespuestasSlack', 'prepararFinDeDia']
+        .indexOf(t.getHandlerFunction()) !== -1) {
       ScriptApp.deleteTrigger(t);
     }
   });
   ScriptApp.newTrigger('procesarCorreos').timeBased().everyMinutes(10).create();
   ScriptApp.newTrigger('actualizarSeguimientos').timeBased().atHour(7).everyDays(1).create();
-  Logger.log('Triggers instalados: escaneo cada 10 min y seguimientos diarios a las 7:00.');
+  ScriptApp.newTrigger('refrescarRespuestasSlack').timeBased().everyMinutes(15).create();
+  ScriptApp.newTrigger('prepararFinDeDia').timeBased().atHour(18).everyDays(1).create();
+  Logger.log('Triggers instalados: escaneo cada 10 min, seguimientos a las 7:00, ' +
+             'respuestas de Slack cada 15 min y borrador de fin de día a las 18:00.');
 }
 
 // ------------------------------------------------------------
@@ -799,7 +874,7 @@ function obtenerOCrearSubcarpeta_(padre, nombre) {
 
 function getConfig_(clave) {
   var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HOJAS.CONFIG);
-  var datos = hoja.getRange('A2:B30').getValues();
+  var datos = hoja.getRange('A2:B60').getValues();
   for (var i = 0; i < datos.length; i++) {
     if (datos[i][0] === clave) return datos[i][1];
   }
@@ -808,12 +883,665 @@ function getConfig_(clave) {
 
 function setConfig_(clave, valor) {
   var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HOJAS.CONFIG);
-  var datos = hoja.getRange('A2:B30').getValues();
+  var datos = hoja.getRange('A2:B60').getValues();
   for (var i = 0; i < datos.length; i++) {
     if (datos[i][0] === clave) {
       hoja.getRange(i + 2, 2).setValue(valor);
       return;
     }
   }
+  // appendRow saltaría a la fila siguiente a las columnas D/E (tipos de documento):
+  // escribimos en la primera fila libre de la columna A.
+  for (var j = 0; j < datos.length; j++) {
+    if (!datos[j][0]) {
+      hoja.getRange(j + 2, 1, 1, 2).setValues([[clave, valor]]);
+      return;
+    }
+  }
   hoja.appendRow([clave, valor]);
+}
+
+// ============================================================
+//  MÓDULO CSM: LLAMADAS SEGMENTADAS, TICKETS, MENSAJES (Slack)
+//  Y FIN DE DÍA (tracker de enablement en Notion)
+// ============================================================
+//
+//  Funciona en modo dual:
+//   - Sin tokens: genera los mensajes en inglés para copiar/pegar.
+//   - Con SLACK_BOT_TOKEN / NOTION_TOKEN en Config: envío directo
+//     a Slack y escritura en Notion, siempre tras tu revisión.
+
+// ------------------------------------------------------------
+// CSM · Hojas y configuración
+// ------------------------------------------------------------
+
+function crearHojaInteracciones_(ss) {
+  var r = hojaInicializable_(ss, HOJAS.INTERACCIONES);
+  if (!r.nueva) return;
+  var hoja = r.hoja;
+  cabecera_(hoja, ['ID', 'Fecha', 'Dealer', 'Tipo', 'Segmento', 'Features',
+                   'Resumen', 'Acuerdos', 'Estado Notion', 'Notas']);
+  hoja.setColumnWidth(COL_INT.DEALER, 200);
+  hoja.setColumnWidth(COL_INT.RESUMEN, 320);
+  hoja.setColumnWidth(COL_INT.ACUERDOS, 320);
+  var regla = SpreadsheetApp.newDataValidation()
+    .requireValueInList([SEGMENTOS.ENABLEMENT, SEGMENTOS.TICKET, SEGMENTOS.WEBSITE, SEGMENTOS.COMPLIANCE, SEGMENTOS.OTRO], true).build();
+  hoja.getRange(2, COL_INT.SEGMENTO, hoja.getMaxRows() - 1, 1).setDataValidation(regla);
+}
+
+function crearHojaTareas_(ss) {
+  var r = hojaInicializable_(ss, HOJAS.TAREAS);
+  if (!r.nueva) return;
+  var hoja = r.hoja;
+  cabecera_(hoja, ['ID', 'Interacción', 'Dealer', 'Quién', 'Descripción',
+                   'Fecha límite', 'Estado', 'Segmento']);
+  hoja.setColumnWidth(COL_TAR.DESCRIPCION, 360);
+  hoja.setColumnWidth(COL_TAR.DEALER, 200);
+  var regla = SpreadsheetApp.newDataValidation().requireValueInList(['Pendiente', 'Hecho'], true).build();
+  hoja.getRange(2, COL_TAR.ESTADO, hoja.getMaxRows() - 1, 1).setDataValidation(regla);
+}
+
+function crearHojaTickets_(ss) {
+  var r = hojaInicializable_(ss, HOJAS.TICKETS);
+  if (!r.nueva) return;
+  var hoja = r.hoja;
+  cabecera_(hoja, ['ID', 'Fecha', 'Dealer', 'Origen', 'Tipología', 'Descripción',
+                   'Estado', 'Canal Slack', 'Slack ts', 'Última actualización', 'Notas']);
+  hoja.setColumnWidth(COL_TIC.DEALER, 200);
+  hoja.setColumnWidth(COL_TIC.DESCRIPCION, 360);
+  hoja.setColumnWidth(COL_TIC.NOTAS, 260);
+  var estados = [ESTADOS_TICKET.ABIERTO, ESTADOS_TICKET.EN_CURSO, ESTADOS_TICKET.ESPERANDO, ESTADOS_TICKET.RESUELTO];
+  var regla = SpreadsheetApp.newDataValidation().requireValueInList(estados, true).build();
+  hoja.getRange(2, COL_TIC.ESTADO, hoja.getMaxRows() - 1, 1).setDataValidation(regla);
+}
+
+function crearHojaMensajes_(ss) {
+  var r = hojaInicializable_(ss, HOJAS.MENSAJES);
+  if (!r.nueva) return;
+  var hoja = r.hoja;
+  cabecera_(hoja, ['ID', 'Fecha', 'Destino', 'Relacionado', 'Texto (EN)', 'Estado',
+                   'Canal ID', 'Thread ts', 'Enviado', 'Respuestas']);
+  hoja.setColumnWidth(COL_MSG.TEXTO, 420);
+  hoja.setColumnWidth(COL_MSG.RELACION, 200);
+  var estados = [ESTADOS_MENSAJE.BORRADOR, ESTADOS_MENSAJE.APROBADO, ESTADOS_MENSAJE.ENVIADO];
+  var regla = SpreadsheetApp.newDataValidation().requireValueInList(estados, true).build();
+  hoja.getRange(2, COL_MSG.ESTADO, hoja.getMaxRows() - 1, 1).setDataValidation(regla);
+}
+
+/**
+ * Añade a Config las claves del módulo CSM (si faltan) y la tabla de
+ * tipologías de ticket (columnas G/H). Idempotente.
+ */
+function asegurarConfigCSM_(ss) {
+  var hoja = ss.getSheetByName(HOJAS.CONFIG);
+  var claves = hoja.getRange('A2:A60').getValues().map(function (f) { return f[0]; });
+  [
+    ['SLACK_BOT_TOKEN', ''],
+    ['SLACK_CANAL_TICKETS', ''],
+    ['SLACK_CANAL_WEBSITE', ''],
+    ['SLACK_CANAL_COMPLIANCE', ''],
+    ['SLACK_USER_WEBSITE_OWNER', ''],
+    ['NOTION_TOKEN', ''],
+    ['NOTION_DB_TRACKER', '39d7a68b263046569429b2916e8ee036'],
+    ['CALENDARIO_ID', '']
+  ].forEach(function (par) {
+    if (claves.indexOf(par[0]) === -1) setConfig_(par[0], par[1]);
+  });
+
+  // Tipologías de ticket ↔ canal de Slack por defecto (editable sin tocar código)
+  if (!hoja.getRange('G1').getValue()) {
+    hoja.getRange('G1:H1').setValues([['Tipología de ticket', 'Canal Slack por defecto']])
+        .setFontWeight('bold').setBackground('#1a73e8').setFontColor('white');
+    hoja.getRange('G2:H12').setValues([
+      ['Bugs & App questions (DMS)', 'ES-TICKETS'],
+      ['Bugs & App questions (Non-DMS)', 'ES-TICKETS'],
+      ['Payments', 'ES-TICKETS'],
+      ['Billing', 'ES-TICKETS'],
+      ['Manual alterations & Backoffice', 'ES-TICKETS'],
+      ['Compliance', 'compliance-ops'],
+      ['Line Increases', 'compliance-ops'],
+      ['KYS', 'compliance-ops'],
+      ['Exceptions & Concessions', 'compliance-ops'],
+      ['Website', 'dealer-website-creation'],
+      ['Otro', 'ES-TICKETS']
+    ]);
+    hoja.setColumnWidth(7, 260);
+    hoja.setColumnWidth(8, 220);
+  }
+}
+
+function leerTipologias_() {
+  var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HOJAS.CONFIG);
+  if (!hoja || !hoja.getRange('G1').getValue()) return [];
+  return hoja.getRange('G2:H40').getValues()
+    .filter(function (f) { return f[0]; })
+    .map(function (f) { return { tipologia: String(f[0]).trim(), canal: String(f[1] || 'ES-TICKETS').trim() }; });
+}
+
+function canalDeTipologia_(tipologia) {
+  var t = leerTipologias_().filter(function (x) { return x.tipologia === tipologia; })[0];
+  return t ? t.canal : 'ES-TICKETS';
+}
+
+// ------------------------------------------------------------
+// CSM · Registro de interacciones (llamadas, reuniones, mensajes)
+// ------------------------------------------------------------
+
+/**
+ * Registra una interacción con un dealer y dispara lo que corresponda al segmento:
+ *  - Enablement → queda pendiente del update de fin de día en Notion y, si el dealer
+ *    debe algo, borrador de follow-up en inglés (Gmail).
+ *  - Ticket / Website / Compliance → crea el ticket y el borrador del mensaje de
+ *    Slack en inglés para el canal correspondiente (bandeja Mensajes).
+ *
+ * datos = { dealer, tipo, segmento, features: [], resumen,
+ *           pendientesDealer: 'una por línea', pendientesMios: 'una por línea',
+ *           tipologia: '', fechaLimite: 'yyyy-mm-dd', notas: '' }
+ */
+function registrarInteraccion(datos) {
+  if (!datos || !String(datos.dealer || '').trim()) throw new Error('Indica el dealer.');
+  if (!String(datos.resumen || '').trim()) throw new Error('Escribe un resumen de la interacción.');
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var dealer = String(datos.dealer).trim();
+  var segmento = datos.segmento || SEGMENTOS.OTRO;
+  var resumen = String(datos.resumen).trim();
+  var features = (datos.features || []).join(', ');
+  var pendDealer = lineas_(datos.pendientesDealer);
+  var pendMios = lineas_(datos.pendientesMios);
+
+  var acuerdos = [];
+  if (pendDealer.length) acuerdos.push('Dealer debe: ' + pendDealer.join(' | '));
+  if (pendMios.length) acuerdos.push('Yo debo: ' + pendMios.join(' | '));
+
+  var hojaInt = ss.getSheetByName(HOJAS.INTERACCIONES);
+  var id = 'I-' + String(hojaInt.getLastRow()).padStart(5, '0');
+  var estadoNotion = segmento === SEGMENTOS.ENABLEMENT ? ESTADO_NOTION.PENDIENTE : ESTADO_NOTION.NA;
+  hojaInt.appendRow([id, new Date(), dealer, datos.tipo || 'Llamada', segmento, features,
+                     resumen, acuerdos.join('\n'), estadoNotion, String(datos.notas || '')]);
+
+  // Tareas derivadas de los acuerdos
+  var hojaTar = ss.getSheetByName(HOJAS.TAREAS);
+  var fechaLimite = String(datos.fechaLimite || '');
+  var nuevasTareas = pendDealer.map(function (d) { return ['Dealer', d]; })
+    .concat(pendMios.map(function (d) { return ['Yo', d]; }));
+  var baseTar = hojaTar.getLastRow();
+  nuevasTareas.forEach(function (t, i) {
+    hojaTar.appendRow(['T-' + String(baseTar + i).padStart(5, '0'),
+                       id, dealer, t[0], t[1], fechaLimite, 'Pendiente', segmento]);
+  });
+
+  // Acciones por segmento
+  if (segmento === SEGMENTOS.ENABLEMENT && pendDealer.length) {
+    crearMensaje_(DESTINO_GMAIL, dealer, plantillaFollowUpEnablement_(dealer, pendDealer), '', '');
+  }
+  if (segmento === SEGMENTOS.TICKET) {
+    var tipologia = datos.tipologia || 'Otro';
+    var idTicket = crearTicket_(dealer, datos.tipo || 'Llamada', tipologia, resumen);
+    crearMensaje_(canalDeTipologia_(tipologia), idTicket, plantillaTicket_(dealer, tipologia, resumen, datos.tipo), '', '');
+  }
+  if (segmento === SEGMENTOS.WEBSITE) {
+    var idT = crearTicket_(dealer, datos.tipo || 'Llamada', 'Website', resumen);
+    crearMensaje_('dealer-website-creation', idT, plantillaWebsite_(dealer, pendDealer.length ? pendDealer : [resumen]), '', '');
+  }
+  if (segmento === SEGMENTOS.COMPLIANCE) {
+    var idC = crearTicket_(dealer, datos.tipo || 'Llamada', 'Compliance', resumen);
+    crearMensaje_('compliance-ops', idC, plantillaCompliance_(dealer, resumen), '', '');
+  }
+
+  return getDashboardData();
+}
+
+/** Marca una tarea como hecha o pendiente. */
+function marcarTarea(id, hecho) {
+  var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HOJAS.TAREAS);
+  var datos = hoja.getDataRange().getValues();
+  for (var i = 1; i < datos.length; i++) {
+    if (String(datos[i][COL_TAR.ID - 1]) === String(id)) {
+      hoja.getRange(i + 1, COL_TAR.ESTADO).setValue(hecho ? 'Hecho' : 'Pendiente');
+      return getDashboardData();
+    }
+  }
+  throw new Error('Tarea no encontrada: ' + id);
+}
+
+function lineas_(texto) {
+  return String(texto || '').split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+}
+
+// ------------------------------------------------------------
+// CSM · Tickets
+// ------------------------------------------------------------
+
+function crearTicket_(dealer, origen, tipologia, descripcion) {
+  var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HOJAS.TICKETS);
+  var id = 'TK-' + String(hoja.getLastRow()).padStart(4, '0');
+  hoja.appendRow([id, new Date(), dealer, origen, tipologia, descripcion,
+                  ESTADOS_TICKET.ABIERTO, canalDeTipologia_(tipologia), '', new Date(), '']);
+  return id;
+}
+
+/** Alta manual de un ticket desde el dashboard (entrada por HubSpot/WhatsApp, etc.). */
+function crearTicket(datos) {
+  if (!datos || !String(datos.dealer || '').trim()) throw new Error('Indica el dealer.');
+  if (!String(datos.descripcion || '').trim()) throw new Error('Describe el problema.');
+  var tipologia = datos.tipologia || 'Otro';
+  var id = crearTicket_(String(datos.dealer).trim(), datos.origen || 'HubSpot-WhatsApp', tipologia,
+                        String(datos.descripcion).trim());
+  if (datos.publicar) {
+    crearMensaje_(canalDeTipologia_(tipologia), id,
+                  plantillaTicket_(String(datos.dealer).trim(), tipologia, String(datos.descripcion).trim(), datos.origen), '', '');
+  }
+  return getDashboardData();
+}
+
+function actualizarTicket(id, estado, notas) {
+  var fila = buscarFilaPorId_(HOJAS.TICKETS, COL_TIC.ID, id);
+  if (!fila) throw new Error('Ticket no encontrado: ' + id);
+  if (estado) fila.hoja.getRange(fila.n, COL_TIC.ESTADO).setValue(estado);
+  if (notas !== undefined && notas !== null && notas !== '') fila.hoja.getRange(fila.n, COL_TIC.NOTAS).setValue(notas);
+  fila.hoja.getRange(fila.n, COL_TIC.ACTUALIZADO).setValue(new Date());
+  return getDashboardData();
+}
+
+/**
+ * Redacta una respuesta a un ticket: crea el borrador en la bandeja Mensajes
+ * apuntando al canal del ticket (y a su thread si el mensaje original salió
+ * del dashboard). Se envía después desde la pestaña Mensajes.
+ */
+function responderTicket(id, texto) {
+  var fila = buscarFilaPorId_(HOJAS.TICKETS, COL_TIC.ID, id);
+  if (!fila) throw new Error('Ticket no encontrado: ' + id);
+  if (!String(texto || '').trim()) throw new Error('Escribe la respuesta.');
+  var canal = fila.valores[COL_TIC.CANAL - 1] || 'ES-TICKETS';
+  var ts = String(fila.valores[COL_TIC.TS - 1] || '');
+  crearMensaje_(canal, id, String(texto).trim(), '', ts);
+  fila.hoja.getRange(fila.n, COL_TIC.ESTADO).setValue(ESTADOS_TICKET.EN_CURSO);
+  fila.hoja.getRange(fila.n, COL_TIC.ACTUALIZADO).setValue(new Date());
+  return getDashboardData();
+}
+
+// ------------------------------------------------------------
+// CSM · Bandeja de mensajes (borrador → revisión → envío)
+// ------------------------------------------------------------
+
+function crearMensaje_(destino, relacion, texto, canalId, threadTs) {
+  var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HOJAS.MENSAJES);
+  var id = 'M-' + String(hoja.getLastRow()).padStart(5, '0');
+  hoja.appendRow([id, new Date(), destino, relacion, texto,
+                  ESTADOS_MENSAJE.BORRADOR, canalId || '', threadTs || '', '', '']);
+  return id;
+}
+
+/**
+ * Aprueba y envía un mensaje (con el texto editado en el dashboard):
+ *  - Destino Gmail → crea un borrador en Gmail al dealer (tú lo envías).
+ *  - Destino Slack + token → chat.postMessage (al thread si lo hay).
+ *  - Destino Slack sin token → lo deja Aprobado para copiar/pegar.
+ */
+function aprobarYEnviarMensaje(id, texto) {
+  var fila = buscarFilaPorId_(HOJAS.MENSAJES, COL_MSG.ID, id);
+  if (!fila) throw new Error('Mensaje no encontrado: ' + id);
+  var destino = fila.valores[COL_MSG.DESTINO - 1];
+  var textoFinal = String(texto || fila.valores[COL_MSG.TEXTO - 1] || '').trim();
+  if (!textoFinal) throw new Error('El mensaje está vacío.');
+  fila.hoja.getRange(fila.n, COL_MSG.TEXTO).setValue(textoFinal);
+
+  if (destino === DESTINO_GMAIL) {
+    var dealer = fila.valores[COL_MSG.RELACION - 1];
+    var emails = emailsDeDealer_(dealer);
+    if (!emails) throw new Error('El dealer "' + dealer + '" no tiene email en la hoja Dealers. Añádelo o copia el texto.');
+    GmailApp.createDraft(emails, 'Follow-up: pending items – ' + dealer, textoFinal);
+    marcarMensajeEnviado_(fila, 'Borrador Gmail');
+    return { enviado: true, via: 'gmail', data: getDashboardData() };
+  }
+
+  var claveCanal = DESTINOS_SLACK[destino];
+  if (!claveCanal) throw new Error('Destino desconocido: ' + destino);
+
+  if (!slackToken_()) {
+    fila.hoja.getRange(fila.n, COL_MSG.ESTADO).setValue(ESTADOS_MENSAJE.APROBADO);
+    return { enviado: false, via: 'copiar', texto: textoFinal, data: getDashboardData() };
+  }
+
+  var canalId = String(fila.valores[COL_MSG.CANAL_ID - 1] || getConfig_(claveCanal) || '').trim();
+  if (!canalId) {
+    throw new Error('Falta el ID del canal "' + destino + '" en Config (' + claveCanal + '). ' +
+                    'Cópialo desde Slack: detalles del canal → ID.');
+  }
+  var threadTs = String(fila.valores[COL_MSG.THREAD_TS - 1] || '').trim();
+  var respuesta = slackPost_('chat.postMessage', {
+    channel: canalId,
+    text: textoFinal,
+    thread_ts: threadTs || undefined
+  });
+
+  fila.hoja.getRange(fila.n, COL_MSG.CANAL_ID).setValue(canalId);
+  fila.hoja.getRange(fila.n, COL_MSG.THREAD_TS).setValue(threadTs || respuesta.ts);
+  marcarMensajeEnviado_(fila, 'Slack');
+
+  // Si el mensaje abre un ticket, guardamos su ts para responder en el mismo thread
+  var relacion = String(fila.valores[COL_MSG.RELACION - 1] || '');
+  if (relacion.indexOf('TK-') === 0 && !threadTs) {
+    var ticket = buscarFilaPorId_(HOJAS.TICKETS, COL_TIC.ID, relacion);
+    if (ticket && !ticket.valores[COL_TIC.TS - 1]) {
+      ticket.hoja.getRange(ticket.n, COL_TIC.TS).setValue(respuesta.ts);
+    }
+  }
+  return { enviado: true, via: 'slack', data: getDashboardData() };
+}
+
+/** Marca un mensaje como enviado a mano (flujo copiar/pegar). */
+function marcarMensajeEnviado(id) {
+  var fila = buscarFilaPorId_(HOJAS.MENSAJES, COL_MSG.ID, id);
+  if (!fila) throw new Error('Mensaje no encontrado: ' + id);
+  marcarMensajeEnviado_(fila, 'Manual');
+  return getDashboardData();
+}
+
+function marcarMensajeEnviado_(fila, via) {
+  fila.hoja.getRange(fila.n, COL_MSG.ESTADO).setValue(ESTADOS_MENSAJE.ENVIADO);
+  fila.hoja.getRange(fila.n, COL_MSG.ENVIADO)
+      .setValue(via + ' · ' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM HH:mm'));
+}
+
+/** Lee las respuestas de los threads de Slack enviados desde aquí. Trigger cada 15 min. */
+function refrescarRespuestasSlack() {
+  if (!slackToken_()) return;
+  var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HOJAS.MENSAJES);
+  if (!hoja || hoja.getLastRow() < 2) return;
+  var datos = hoja.getDataRange().getValues();
+  for (var i = 1; i < datos.length; i++) {
+    if (datos[i][COL_MSG.ESTADO - 1] !== ESTADOS_MENSAJE.ENVIADO) continue;
+    var canal = String(datos[i][COL_MSG.CANAL_ID - 1] || '');
+    var ts = String(datos[i][COL_MSG.THREAD_TS - 1] || '');
+    if (!canal || !ts) continue;
+    try {
+      var r = slackGet_('conversations.replies', { channel: canal, ts: ts, limit: 50 });
+      var n = (r.messages || []).length - 1;
+      if (n > 0) {
+        var ultimo = r.messages[r.messages.length - 1];
+        var fecha = Utilities.formatDate(new Date(Number(ultimo.ts) * 1000), Session.getScriptTimeZone(), 'dd/MM HH:mm');
+        hoja.getRange(i + 1, COL_MSG.RESPUESTAS).setValue(n + ' respuesta' + (n === 1 ? '' : 's') + ' · última ' + fecha);
+      }
+    } catch (e) {
+      Logger.log('Slack replies (' + canal + '/' + ts + '): ' + e.message);
+    }
+  }
+}
+
+// ------------------------------------------------------------
+// CSM · Plantillas de mensajes (en inglés, editables antes de enviar)
+// ------------------------------------------------------------
+
+function plantillaFollowUpEnablement_(dealer, pendientes) {
+  return 'Hi team,\n\n' +
+    'Thanks a lot for the call today! As agreed, could you please send us the following ' +
+    'so we can keep moving forward with the setup:\n\n' +
+    pendientes.map(function (p) { return ' - ' + p; }).join('\n') + '\n\n' +
+    'As soon as we receive it we will continue on our side. Thank you!\n\n' +
+    (getConfig_('FIRMA') || 'Best,\nManuel');
+}
+
+function plantillaWebsite_(dealer, cambios) {
+  var owner = String(getConfig_('SLACK_USER_WEBSITE_OWNER') || '').trim();
+  var mencion = owner ? '<@' + owner + '> ' : '@charushila.jagdale.ex ';
+  return mencion + '— the dealer *' + dealer + '* requested the following changes to their website:\n\n' +
+    cambios.map(function (c) { return ' • ' + c; }).join('\n') + '\n\n' +
+    'Could you apply them when possible? Let me know if anything is unclear. Thank you!';
+}
+
+function plantillaCompliance_(dealer, descripcion) {
+  return 'Hi team! Request regarding *' + dealer + '*:\n\n' + descripcion + '\n\n' +
+    'Could you please have a look and confirm next steps? Thanks a lot!';
+}
+
+function plantillaTicket_(dealer, tipologia, descripcion, origen) {
+  return '*Ticket – ' + dealer + '* (' + tipologia + (origen ? ' · via ' + origen : '') + ')\n\n' +
+    descripcion + '\n\n' +
+    'I will follow up with the dealer — any input from your side is welcome.';
+}
+
+// ------------------------------------------------------------
+// CSM · Slack API (UrlFetchApp)
+// ------------------------------------------------------------
+
+function slackToken_() {
+  return String(getConfig_('SLACK_BOT_TOKEN') || '').trim();
+}
+
+function slackPost_(metodo, payload) {
+  var limpio = {};
+  Object.keys(payload).forEach(function (k) { if (payload[k] !== undefined) limpio[k] = payload[k]; });
+  var r = UrlFetchApp.fetch('https://slack.com/api/' + metodo, {
+    method: 'post',
+    contentType: 'application/json; charset=utf-8',
+    headers: { Authorization: 'Bearer ' + slackToken_() },
+    payload: JSON.stringify(limpio),
+    muteHttpExceptions: true
+  });
+  var json = JSON.parse(r.getContentText());
+  if (!json.ok) throw new Error('Slack (' + metodo + '): ' + json.error);
+  return json;
+}
+
+function slackGet_(metodo, params) {
+  var query = Object.keys(params).map(function (k) {
+    return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+  }).join('&');
+  var r = UrlFetchApp.fetch('https://slack.com/api/' + metodo + '?' + query, {
+    headers: { Authorization: 'Bearer ' + slackToken_() },
+    muteHttpExceptions: true
+  });
+  var json = JSON.parse(r.getContentText());
+  if (!json.ok) throw new Error('Slack (' + metodo + '): ' + json.error);
+  return json;
+}
+
+// ------------------------------------------------------------
+// CSM · Notion API (Summer Enablement Tracker)
+// ------------------------------------------------------------
+
+function notionToken_() {
+  return String(getConfig_('NOTION_TOKEN') || '').trim();
+}
+
+function notionFetch_(ruta, metodo, payload) {
+  var opciones = {
+    method: metodo,
+    contentType: 'application/json',
+    headers: {
+      Authorization: 'Bearer ' + notionToken_(),
+      'Notion-Version': '2022-06-28'
+    },
+    muteHttpExceptions: true
+  };
+  if (payload) opciones.payload = JSON.stringify(payload);
+  var r = UrlFetchApp.fetch('https://api.notion.com/v1/' + ruta, opciones);
+  var json = JSON.parse(r.getContentText());
+  if (r.getResponseCode() >= 300) {
+    throw new Error('Notion (' + ruta + '): ' + (json.message || r.getResponseCode()));
+  }
+  return json;
+}
+
+/** Busca la página del dealer en el tracker por su título. */
+function buscarPaginaDealerNotion_(dealer) {
+  var db = String(getConfig_('NOTION_DB_TRACKER') || '').trim();
+  if (!db) throw new Error('Falta NOTION_DB_TRACKER en Config.');
+  var filtros = ['equals', 'contains'];
+  for (var i = 0; i < filtros.length; i++) {
+    var cuerpo = { page_size: 3, filter: { property: 'Dealer', title: {} } };
+    cuerpo.filter.title[filtros[i]] = dealer;
+    var r = notionFetch_('databases/' + db + '/query', 'post', cuerpo);
+    if (r.results && r.results.length) {
+      var pagina = r.results[0];
+      var prop = pagina.properties && pagina.properties['Latest Update'];
+      var actual = prop && prop.rich_text
+        ? prop.rich_text.map(function (t) { return t.plain_text; }).join('')
+        : '';
+      return { id: pagina.id, latestUpdate: actual };
+    }
+  }
+  return null;
+}
+
+/** Antepone "[dd/MM] comentario" al Latest Update del dealer en el tracker. */
+function actualizarNotionDealer_(dealer, comentario) {
+  var pagina = buscarPaginaDealerNotion_(dealer);
+  if (!pagina) throw new Error('No encuentro a "' + dealer + '" en el tracker de Notion (columna Dealer).');
+  var fecha = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM');
+  var nuevo = '[' + fecha + '] ' + comentario;
+  if (pagina.latestUpdate) nuevo += '\n' + pagina.latestUpdate;
+  if (nuevo.length > 1900) nuevo = nuevo.slice(0, 1900) + '…';
+  notionFetch_('pages/' + pagina.id, 'patch', {
+    properties: { 'Latest Update': { rich_text: [{ text: { content: nuevo } }] } }
+  });
+}
+
+// ------------------------------------------------------------
+// CSM · Fin de día (update del tracker de Notion)
+// ------------------------------------------------------------
+
+/**
+ * Agrupa las interacciones de HOY pendientes de Notion por dealer y compone
+ * el comentario en inglés para el campo "Latest Update" del tracker.
+ */
+function componerFinDeDia_() {
+  var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HOJAS.INTERACCIONES);
+  if (!hoja || hoja.getLastRow() < 2) return [];
+  var datos = hoja.getDataRange().getValues();
+  var hoy = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  var porDealer = {};
+
+  for (var i = 1; i < datos.length; i++) {
+    var fecha = datos[i][COL_INT.FECHA - 1];
+    if (!(fecha instanceof Date)) continue;
+    if (Utilities.formatDate(fecha, Session.getScriptTimeZone(), 'yyyy-MM-dd') !== hoy) continue;
+    if (datos[i][COL_INT.ESTADO_NOTION - 1] !== ESTADO_NOTION.PENDIENTE) continue;
+
+    var dealer = datos[i][COL_INT.DEALER - 1];
+    var g = porDealer[dealer] = porDealer[dealer] || { partes: [], ids: [] };
+    g.ids.push(datos[i][COL_INT.ID - 1]);
+
+    var trozo = datos[i][COL_INT.TIPO - 1] + ': ' + datos[i][COL_INT.RESUMEN - 1];
+    var acuerdos = String(datos[i][COL_INT.ACUERDOS - 1] || '');
+    if (acuerdos) {
+      trozo += '. ' + acuerdos
+        .replace(/Dealer debe:/g, 'Waiting on dealer:')
+        .replace(/Yo debo:/g, 'Next on our side:')
+        .replace(/\n/g, ' ');
+    }
+    g.partes.push(trozo);
+  }
+
+  return Object.keys(porDealer).sort().map(function (dealer) {
+    return { dealer: dealer, comentario: porDealer[dealer].partes.join(' — '), ids: porDealer[dealer].ids };
+  });
+}
+
+/**
+ * Escribe los updates de fin de día en Notion (requiere NOTION_TOKEN) y marca
+ * las interacciones como sincronizadas.
+ * updates = [{ dealer, comentario, ids: [] }]
+ */
+function sincronizarFinDeDia(updates) {
+  if (!notionToken_()) throw new Error('Falta NOTION_TOKEN en Config. Usa "Copiar todo" y pégalo en Notion.');
+  var errores = [];
+  (updates || []).forEach(function (u) {
+    try {
+      actualizarNotionDealer_(u.dealer, u.comentario);
+      marcarInteraccionesSincronizadas_(u.ids);
+    } catch (e) {
+      errores.push(u.dealer + ': ' + e.message);
+    }
+  });
+  return { errores: errores, data: getDashboardData() };
+}
+
+/** Marca las interacciones como sincronizadas sin escribir en Notion (flujo copiar/pegar). */
+function marcarFinDeDiaSincronizado(ids) {
+  marcarInteraccionesSincronizadas_(ids || []);
+  return getDashboardData();
+}
+
+function marcarInteraccionesSincronizadas_(ids) {
+  if (!ids || !ids.length) return;
+  var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HOJAS.INTERACCIONES);
+  var datos = hoja.getDataRange().getValues();
+  var buscados = {};
+  ids.forEach(function (id) { buscados[String(id)] = true; });
+  for (var i = 1; i < datos.length; i++) {
+    if (buscados[String(datos[i][COL_INT.ID - 1])]) {
+      hoja.getRange(i + 1, COL_INT.ESTADO_NOTION).setValue(ESTADO_NOTION.SINCRONIZADO);
+    }
+  }
+}
+
+/**
+ * Trigger diario (18:00): si hay updates pendientes, deja un borrador en Gmail
+ * dirigido a ti con el texto compuesto, por si no abres el dashboard.
+ */
+function prepararFinDeDia() {
+  var updates = componerFinDeDia_();
+  if (!updates.length) return;
+  var cuerpo = updates.map(function (u) {
+    return u.dealer + '\n' + u.comentario;
+  }).join('\n\n---\n\n');
+  var fecha = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM');
+  GmailApp.createDraft(Session.getActiveUser().getEmail(),
+    'Notion end-of-day update – ' + fecha + ' (' + updates.length + ' dealers)',
+    'Pending "Latest Update" entries for the Summer Enablement Tracker:\n\n' + cuerpo +
+    '\n\nOpen the dashboard (🌙 Fin de día) to sync or copy them.');
+}
+
+// ------------------------------------------------------------
+// CSM · Agenda del día (Google Calendar)
+// ------------------------------------------------------------
+
+/** Eventos de hoy con el dealer detectado por los emails de los invitados. */
+function getAgendaHoy_() {
+  try {
+    var idCal = String(getConfig_('CALENDARIO_ID') || '').trim();
+    var cal = idCal ? CalendarApp.getCalendarById(idCal) : CalendarApp.getDefaultCalendar();
+    if (!cal) return [];
+    var eventos = cal.getEventsForDay(new Date());
+
+    var mapaEmailDealer = {};
+    leerDealers_().forEach(function (d) {
+      d.emails.forEach(function (e) { mapaEmailDealer[e] = d.nombre; });
+    });
+
+    return eventos.map(function (ev) {
+      var invitados = ev.getGuestList().map(function (g) { return g.getEmail().toLowerCase(); });
+      var dealer = '';
+      invitados.forEach(function (e) { if (!dealer && mapaEmailDealer[e]) dealer = mapaEmailDealer[e]; });
+      return {
+        hora: ev.isAllDayEvent() ? 'Todo el día'
+              : Utilities.formatDate(ev.getStartTime(), Session.getScriptTimeZone(), 'HH:mm'),
+        titulo: ev.getTitle(),
+        dealer: dealer,
+        invitados: invitados.join(', ')
+      };
+    });
+  } catch (e) {
+    Logger.log('Agenda: ' + e.message);
+    return [];
+  }
+}
+
+// ------------------------------------------------------------
+// CSM · Utilidades
+// ------------------------------------------------------------
+
+function buscarFilaPorId_(nombreHoja, colId, id) {
+  var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nombreHoja);
+  if (!hoja) return null;
+  var datos = hoja.getDataRange().getValues();
+  for (var i = 1; i < datos.length; i++) {
+    if (String(datos[i][colId - 1]) === String(id)) {
+      return { hoja: hoja, n: i + 1, valores: datos[i] };
+    }
+  }
+  return null;
 }

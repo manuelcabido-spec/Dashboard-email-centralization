@@ -122,12 +122,17 @@
   .empty { text-align: center; color: var(--muted); padding: 30px; }
   .followup { color: var(--critical); font-weight: 700; }
 
-  /* Modal Nueva campaña */
-  #modal {
+  /* Modales (nueva campaña, interacción, ticket, mensaje…) */
+  #modal, .overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,.45);
     display: none; align-items: flex-start; justify-content: center; padding: 40px 16px; z-index: 10;
+    overflow-y: auto;
   }
-  #modal.open { display: flex; }
+  #modal.open, .overlay.open { display: flex; }
+  .checks { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; }
+  .checks label { display: inline-flex; align-items: center; gap: 5px; }
+  .sec-title { font-size: 13px; font-weight: 700; color: var(--ink-2); padding: 12px 12px 6px; }
+  .msg-text { white-space: pre-wrap; max-width: 480px; }
   .modal-box {
     background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
     padding: 20px; width: 100%; max-width: 520px;
@@ -171,12 +176,13 @@
 <body>
 
 <header>
-  <h1>📋 Dealer Document Tracker</h1>
+  <h1>📋 Dealer CSM Hub</h1>
   <span class="meta" id="updated"></span>
   <span class="spacer"></span>
   <a class="btn" id="sheetLink" target="_blank" rel="noopener">Abrir Google Sheet</a>
   <button onclick="refrescar()">⟳ Actualizar datos</button>
-  <button class="primary" id="btnScan" onclick="escanear()">🔄 Escanear correos ahora</button>
+  <button class="primary" onclick="abrirModalInt()">➕ Registrar interacción</button>
+  <button id="btnScan" onclick="escanear()">🔄 Escanear correos</button>
 </header>
 
 <div id="banner"></div>
@@ -201,10 +207,15 @@
   </div>
 
   <div class="tabs">
-    <button id="tab-solicitudes" class="active" onclick="setTab('solicitudes')">Solicitudes <span class="count" id="cnt-solicitudes"></span></button>
+    <button id="tab-hoy" class="active" onclick="setTab('hoy')">📅 Hoy <span class="count" id="cnt-hoy"></span></button>
+    <button id="tab-enablement" onclick="setTab('enablement')">🚀 Enablement <span class="count" id="cnt-enablement"></span></button>
+    <button id="tab-tickets" onclick="setTab('tickets')">🎫 Tickets <span class="count" id="cnt-tickets"></span></button>
+    <button id="tab-mensajes" onclick="setTab('mensajes')">✉️ Mensajes <span class="count" id="cnt-mensajes"></span></button>
+    <button id="tab-findia" onclick="setTab('findia')">🌙 Fin de día <span class="count" id="cnt-findia"></span></button>
+    <button id="tab-solicitudes" onclick="setTab('solicitudes')">Solicitudes <span class="count" id="cnt-solicitudes"></span></button>
     <button id="tab-dealers" onclick="setTab('dealers')">🏢 Dealers <span class="count" id="cnt-dealers"></span></button>
     <button id="tab-seguimiento" onclick="setTab('seguimiento')">⚠️ Seguimiento <span class="count" id="cnt-seguimiento"></span></button>
-    <button id="tab-correos" onclick="setTab('correos')">Correos recibidos <span class="count" id="cnt-correos"></span></button>
+    <button id="tab-correos" onclick="setTab('correos')">Correos <span class="count" id="cnt-correos"></span></button>
   </div>
 
   <div class="filters" id="filters">
@@ -257,17 +268,166 @@
   </div>
 </div>
 
+<!-- Modal: registrar interacción (llamada / reunión / mensaje con un dealer) -->
+<div id="modalInt" class="overlay">
+  <div class="modal-box">
+    <h2>➕ Registrar interacción</h2>
+    <div class="field">
+      <label for="iDealer">Dealer</label>
+      <input type="text" id="iDealer" list="dlDealers" placeholder="Nombre del dealer">
+      <datalist id="dlDealers"></datalist>
+    </div>
+    <div class="field" style="display:flex;gap:10px">
+      <div style="flex:1">
+        <label for="iTipo">Tipo</label>
+        <select id="iTipo" style="width:100%"></select>
+      </div>
+      <div style="flex:1">
+        <label for="iSegmento">Segmento</label>
+        <select id="iSegmento" style="width:100%" onchange="toggleSegmento()"></select>
+      </div>
+    </div>
+    <div class="field" id="iTipologiaWrap" style="display:none">
+      <label for="iTipologia">Tipología del ticket</label>
+      <select id="iTipologia" style="width:100%"></select>
+    </div>
+    <div class="field" id="iFeaturesWrap">
+      <label>Features tratadas</label>
+      <div id="iFeatures" class="checks"></div>
+    </div>
+    <div class="field">
+      <label for="iResumen">Resumen (qué se ha hablado / cuál es el problema)</label>
+      <textarea id="iResumen" rows="3" style="width:100%"></textarea>
+    </div>
+    <div class="field">
+      <label for="iPendDealer">El dealer me debe pasar… (una cosa por línea → tareas + mensaje de follow-up)</label>
+      <textarea id="iPendDealer" rows="3" style="width:100%" placeholder="Ej: Meta Business access&#10;Inventory credentials"></textarea>
+    </div>
+    <div class="field">
+      <label for="iPendMios">Yo debo… (una cosa por línea → tareas mías)</label>
+      <textarea id="iPendMios" rows="2" style="width:100%" placeholder="Ej: Ask about audit extension"></textarea>
+    </div>
+    <div class="field" style="display:flex;gap:10px">
+      <div style="flex:1">
+        <label for="iFechaLimite">Fecha límite (opcional)</label>
+        <input type="date" id="iFechaLimite" style="width:100%">
+      </div>
+      <div style="flex:2">
+        <label for="iNotas">Notas (opcional)</label>
+        <input type="text" id="iNotas" style="width:100%">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button onclick="cerrarOverlay('modalInt')">Cancelar</button>
+      <button class="primary" id="btnGuardarInt" onclick="guardarInteraccion()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: nuevo ticket de soporte -->
+<div id="modalTicket" class="overlay">
+  <div class="modal-box">
+    <h2>🎫 Nuevo ticket</h2>
+    <div class="field">
+      <label for="tDealer">Dealer</label>
+      <input type="text" id="tDealer" list="dlDealers" placeholder="Nombre del dealer">
+    </div>
+    <div class="field" style="display:flex;gap:10px">
+      <div style="flex:1">
+        <label for="tOrigen">Origen</label>
+        <select id="tOrigen" style="width:100%">
+          <option>HubSpot-WhatsApp</option><option>Slack</option><option>Email</option><option>Llamada</option>
+        </select>
+      </div>
+      <div style="flex:1">
+        <label for="tTipologia">Tipología</label>
+        <select id="tTipologia" style="width:100%"></select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="tDescripcion">Descripción del problema</label>
+      <textarea id="tDescripcion" rows="4" style="width:100%"></textarea>
+    </div>
+    <div class="field">
+      <label class="radio"><input type="checkbox" id="tPublicar" checked> Preparar mensaje para su canal de Slack (bandeja Mensajes)</label>
+    </div>
+    <div class="modal-actions">
+      <button onclick="cerrarOverlay('modalTicket')">Cancelar</button>
+      <button class="primary" id="btnGuardarTicket" onclick="guardarTicket()">Crear ticket</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: revisar y enviar un mensaje -->
+<div id="modalMsg" class="overlay">
+  <div class="modal-box">
+    <h2>✉️ Revisar mensaje</h2>
+    <div class="field"><span class="hint" id="mMeta"></span></div>
+    <div class="field">
+      <textarea id="mTexto" rows="9" style="width:100%"></textarea>
+    </div>
+    <div class="modal-actions" style="justify-content:space-between;flex-wrap:wrap">
+      <div style="display:flex;gap:8px">
+        <button onclick="copiarTexto(document.getElementById('mTexto').value)">📋 Copiar</button>
+        <button onclick="msgMarcarEnviado()">✔ Ya lo envié yo</button>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="cerrarOverlay('modalMsg')">Cerrar</button>
+        <button class="primary" id="btnEnviarMsg" onclick="msgAprobarEnviar()">Enviar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: responder a un ticket -->
+<div id="modalResp" class="overlay">
+  <div class="modal-box">
+    <h2>💬 Responder ticket</h2>
+    <div class="field"><span class="hint" id="rMeta"></span></div>
+    <div class="field">
+      <textarea id="rTexto" rows="7" style="width:100%"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button onclick="cerrarOverlay('modalResp')">Cancelar</button>
+      <button class="primary" id="btnGuardarResp" onclick="guardarRespuesta()">Guardar en Mensajes</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
   // Debe coincidir con la constante VERSION de Code.gs: si difieren, la
   // implementación /exec está sirviendo una versión antigua del código.
-  var VERSION = 4;
+  var VERSION = 5;
 
   var DATA = null;
-  var TAB = 'solicitudes';
+  var TAB = 'hoy';
+  var DOC_TABS = ['solicitudes', 'dealers', 'seguimiento', 'correos'];
   var CAMPANA_SEL = ''; // '' = todas
   var DEALER_FILTRO = ''; // filtro por estado en la pestaña Dealers
+  var MSG_SEL = null;    // mensaje abierto en el modal de revisión
+  var TICKET_SEL = null; // ticket abierto en el modal de respuesta
+  var TICKET_FILTRO = ''; // filtro por estado en la pestaña Tickets
+
+  var COLOR_SEGMENTO = {
+    'Enablement': 'var(--good)',
+    'Ticket': 'var(--critical)',
+    'Website': 'var(--blue)',
+    'Compliance': 'var(--serious)',
+    'Otro': 'var(--muted)'
+  };
+  var COLOR_TICKET = {
+    'Abierto': 'var(--critical)',
+    'En curso': 'var(--blue)',
+    'Esperando dealer': 'var(--warning)',
+    'Resuelto': 'var(--good)'
+  };
+  var COLOR_MENSAJE = {
+    'Borrador': 'var(--warning)',
+    'Aprobado': 'var(--blue)',
+    'Enviado': 'var(--good)'
+  };
 
   var ESTADOS_DEALER = {
     INCORRECTO: '✖ Incorrecto - reenvío pedido',
@@ -332,6 +492,7 @@
       });
     }
     pintarSelectorCampanas();
+    poblarSelectoresCSM();
     render();
   }
 
@@ -415,6 +576,34 @@
   }
 
   function renderInterno() {
+    if (!DATA.interacciones) {
+      // Servidor antiguo (v4): mostramos las pestañas de documentos y el banner de versión
+      TAB = DOC_TABS.indexOf(TAB) !== -1 ? TAB : 'solicitudes';
+      DATA.interacciones = []; DATA.tareas = []; DATA.tickets = [];
+      DATA.mensajes = []; DATA.finDeDia = []; DATA.agendaHoy = [];
+    }
+    // Contadores de las pestañas CSM (visibles siempre)
+    var intHoy = DATA.interacciones.filter(function (x) { return x['Fecha'] === DATA.hoy; });
+    var ticketsAbiertos = DATA.tickets.filter(function (t) { return t['Estado'] !== 'Resuelto'; });
+    var msgsPendientes = DATA.mensajes.filter(function (m) { return m['Estado'] !== 'Enviado'; });
+    document.getElementById('cnt-hoy').textContent = intHoy.length;
+    document.getElementById('cnt-enablement').textContent =
+      DATA.interacciones.filter(function (x) { return x['Segmento'] === 'Enablement'; }).length;
+    document.getElementById('cnt-tickets').textContent = ticketsAbiertos.length;
+    document.getElementById('cnt-mensajes').textContent = msgsPendientes.length;
+    document.getElementById('cnt-findia').textContent = DATA.finDeDia.length;
+
+    // Las pestañas de documentos conservan su interfaz (campañas, KPIs, barra);
+    // las pestañas CSM pintan la suya propia.
+    var esDocs = DOC_TABS.indexOf(TAB) !== -1;
+    document.querySelector('.campana-bar').style.display = esDocs ? '' : 'none';
+    document.querySelector('.dist').style.display = esDocs ? '' : 'none';
+    if (!esDocs) {
+      document.getElementById('campanas').style.display = 'none';
+      renderCSM(intHoy, ticketsAbiertos, msgsPendientes);
+      return;
+    }
+
     var filasCampana = solicitudesDeCampana(CAMPANA_SEL);
     var k = kpisDe(filasCampana);
 
@@ -649,7 +838,8 @@
 
   function setTab(t) {
     TAB = t;
-    ['solicitudes', 'dealers', 'seguimiento', 'correos'].forEach(function (x) {
+    ['hoy', 'enablement', 'tickets', 'mensajes', 'findia',
+     'solicitudes', 'dealers', 'seguimiento', 'correos'].forEach(function (x) {
       document.getElementById('tab-' + x).classList.toggle('active', x === t);
     });
     render();
@@ -782,6 +972,414 @@
   // Para nombres dentro de onclick="fn('…')": primero se escapa para JS, luego para HTML
   function escAttr(s) {
     return esc(String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
+  }
+
+  // ============================================================
+  //  MÓDULO CSM: Hoy / Enablement / Tickets / Mensajes / Fin de día
+  // ============================================================
+
+  function renderCSM(intHoy, ticketsAbiertos, msgsPendientes) {
+    document.getElementById('filtroEstado').style.display = 'none';
+    document.getElementById('chkGestionadosWrap').style.display = 'none';
+
+    var tareasPend = DATA.tareas.filter(function (t) { return t['Estado'] !== 'Hecho'; });
+    document.getElementById('kpis').innerHTML =
+      kpiCSM('Interacciones hoy', intHoy.length, 'var(--blue)', 'hoy') +
+      kpiCSM('Tickets abiertos', ticketsAbiertos.length, 'var(--critical)', 'tickets') +
+      kpiCSM('Mensajes por revisar', msgsPendientes.length, 'var(--warning)', 'mensajes') +
+      kpiCSM('Me deben (dealers)', tareasPend.filter(function (t) { return t['Quién'] === 'Dealer'; }).length, 'var(--serious)', 'hoy') +
+      kpiCSM('Debo yo', tareasPend.filter(function (t) { return t['Quién'] === 'Yo'; }).length, 'var(--good)', 'hoy') +
+      kpiCSM('Notion pendiente hoy', DATA.finDeDia.length, 'var(--muted)', 'findia');
+
+    var html = '';
+    if (TAB === 'hoy') html = vistaHoy(intHoy, tareasPend);
+    if (TAB === 'enablement') html = vistaEnablement(tareasPend);
+    if (TAB === 'tickets') html = vistaTickets();
+    if (TAB === 'mensajes') html = vistaMensajes();
+    if (TAB === 'findia') html = vistaFinDia();
+    document.getElementById('content').innerHTML = html;
+  }
+
+  function kpiCSM(label, value, color, tab) {
+    return '<div class="tile" onclick="setTab(\'' + tab + '\')">' +
+      '<div class="label"><span class="dot" style="background:' + color + '"></span>' + label + '</div>' +
+      '<div class="value">' + value + '</div></div>';
+  }
+
+  function badgeColor(texto, mapa) {
+    var c = mapa[texto] || 'var(--muted)';
+    return '<span class="badge"><span class="dot" style="background:' + c + '"></span>' + esc(texto || '—') + '</span>';
+  }
+
+  function filtraTexto(filas) {
+    var q = document.getElementById('search').value.toLowerCase();
+    if (!q) return filas;
+    return filas.filter(function (f) {
+      return Object.keys(f).some(function (k) { return String(f[k]).toLowerCase().indexOf(q) !== -1; });
+    });
+  }
+
+  // ---- 📅 Hoy ----
+  function vistaHoy(intHoy, tareasPend) {
+    var h = '<div class="sec-title">📆 Agenda de hoy</div>';
+    if (!DATA.agendaHoy.length) {
+      h += '<div class="empty">Sin eventos hoy en Google Calendar (si debería haberlos, re-ejecuta setup() y autoriza Calendar).</div>';
+    } else {
+      h += '<table><tr><th>Hora</th><th>Reunión</th><th>Dealer</th><th></th></tr>';
+      DATA.agendaHoy.forEach(function (e) {
+        h += '<tr><td class="num">' + esc(e.hora) + '</td><td>' + esc(e.titulo) + '</td>' +
+          '<td>' + esc(e.dealer || '—') + '</td>' +
+          '<td><button class="small" onclick="abrirModalInt(\'' + escAttr(e.dealer || '') + '\')">➕ Registrar</button></td></tr>';
+      });
+      h += '</table>';
+    }
+    h += '<div class="sec-title">🗣 Interacciones de hoy</div>' + tablaInteracciones(filtraTexto(intHoy));
+    h += '<div class="sec-title">📌 Tareas pendientes</div>' + tablaTareas(filtraTexto(tareasPend));
+    return h;
+  }
+
+  function tablaInteracciones(filas) {
+    if (!filas.length) return '<div class="empty">Nada registrado aún. Usa «➕ Registrar interacción».</div>';
+    var h = '<table><tr><th>Fecha</th><th>Dealer</th><th>Tipo</th><th>Segmento</th><th>Features</th><th>Resumen</th><th>Acuerdos</th><th>Notion</th></tr>';
+    filas.forEach(function (x) {
+      h += '<tr><td class="num">' + esc(x['Fecha']) + '</td><td>' + esc(x['Dealer']) + '</td>' +
+        '<td>' + esc(x['Tipo']) + '</td>' +
+        '<td>' + badgeColor(x['Segmento'], COLOR_SEGMENTO) + '</td>' +
+        '<td>' + esc(x['Features'] || '—') + '</td>' +
+        '<td class="msg-text">' + esc(x['Resumen']) + '</td>' +
+        '<td class="msg-text">' + esc(x['Acuerdos'] || '—') + '</td>' +
+        '<td>' + (x['Segmento'] === 'Enablement'
+                    ? (x['Estado Notion'] === 'Sincronizado' ? '✔' : '⏳ ' + esc(x['Estado Notion']))
+                    : '—') + '</td></tr>';
+    });
+    return h + '</table>';
+  }
+
+  function tablaTareas(filas) {
+    if (!filas.length) return '<div class="empty">🎉 Sin tareas pendientes.</div>';
+    var h = '<table><tr><th>Dealer</th><th>Quién</th><th>Descripción</th><th>Segmento</th><th>Límite</th><th></th></tr>';
+    filas.forEach(function (t) {
+      h += '<tr><td>' + esc(t['Dealer']) + '</td>' +
+        '<td>' + (t['Quién'] === 'Dealer' ? '📥 Dealer' : '🙋 Yo') + '</td>' +
+        '<td>' + esc(t['Descripción']) + '</td>' +
+        '<td>' + badgeColor(t['Segmento'], COLOR_SEGMENTO) + '</td>' +
+        '<td class="num">' + esc(t['Fecha límite'] || '—') + '</td>' +
+        '<td><button class="small" onclick="tareaHecha(\'' + escAttr(t['ID']) + '\')">✔ Hecha</button></td></tr>';
+    });
+    return h + '</table>';
+  }
+
+  // ---- 🚀 Enablement ----
+  function vistaEnablement(tareasPend) {
+    var filas = filtraTexto(DATA.interacciones.filter(function (x) { return x['Segmento'] === 'Enablement'; }));
+    var h = '<div class="sec-title">Historial de enablement (el update diario de Notion se compone en 🌙 Fin de día)</div>';
+    h += tablaInteracciones(filas);
+    var tareas = filtraTexto(tareasPend.filter(function (t) { return t['Segmento'] === 'Enablement'; }));
+    h += '<div class="sec-title">📌 Pendientes de enablement</div>' + tablaTareas(tareas);
+    return h;
+  }
+
+  // ---- 🎫 Tickets ----
+  function vistaTickets() {
+    var estados = ['Abierto', 'En curso', 'Esperando dealer', 'Resuelto'];
+    var chips = estados.map(function (e) {
+      var n = DATA.tickets.filter(function (t) { return t['Estado'] === e; }).length;
+      var active = TICKET_FILTRO === e ? ' active' : '';
+      return '<span class="chip' + active + '" onclick="filtrarTicket(\'' + escAttr(e) + '\')">' +
+        '<span class="dot" style="background:' + COLOR_TICKET[e] + '"></span>' + esc(e) +
+        ' <span class="n">' + n + '</span></span>';
+    }).join('');
+
+    var filas = filtraTexto(DATA.tickets.filter(function (t) {
+      return !TICKET_FILTRO ? t['Estado'] !== 'Resuelto' : t['Estado'] === TICKET_FILTRO;
+    }));
+
+    var h = '<div class="chips">' + chips +
+      '<span class="spacer" style="flex:1"></span>' +
+      '<button class="small" onclick="abrirModalTicket()">➕ Nuevo ticket</button></div>';
+    if (!filas.length) return h + '<div class="empty">No hay tickets' + (TICKET_FILTRO ? ' en "' + esc(TICKET_FILTRO) + '"' : ' abiertos') + '.</div>';
+
+    h += '<table><tr><th>Fecha</th><th>Dealer</th><th>Tipología</th><th>Canal</th><th>Descripción</th><th>Estado</th><th>Últ. act.</th><th>Acciones</th></tr>';
+    filas.forEach(function (t) {
+      var id = escAttr(t['ID']);
+      h += '<tr><td class="num">' + esc(t['Fecha']) + '</td><td>' + esc(t['Dealer']) + '</td>' +
+        '<td>' + esc(t['Tipología']) + '</td>' +
+        '<td>#' + esc(t['Canal Slack']) + '</td>' +
+        '<td class="msg-text">' + esc(t['Descripción']) + (t['Notas'] ? '<br><span style="color:var(--muted)">📝 ' + esc(t['Notas']) + '</span>' : '') + '</td>' +
+        '<td>' + badgeColor(t['Estado'], COLOR_TICKET) + '</td>' +
+        '<td class="num">' + esc(t['Última actualización'] || '—') + '</td>' +
+        '<td style="white-space:nowrap">' +
+          '<button class="small" onclick="abrirResp(\'' + id + '\')">💬 Responder</button> ' +
+          (t['Estado'] !== 'Esperando dealer' ? '<button class="small" title="Esperando al dealer" onclick="estadoTicket(\'' + id + '\',\'Esperando dealer\')">⏳</button> ' : '') +
+          (t['Estado'] !== 'Resuelto' ? '<button class="small" title="Marcar resuelto" onclick="estadoTicket(\'' + id + '\',\'Resuelto\')">✔</button> ' : '') +
+          '<button class="small" title="Añadir nota" onclick="notaTicket(\'' + id + '\')">📝</button>' +
+        '</td></tr>';
+    });
+    return h + '</table>';
+  }
+  function filtrarTicket(e) { TICKET_FILTRO = TICKET_FILTRO === e ? '' : e; render(); }
+
+  // ---- ✉️ Mensajes ----
+  function vistaMensajes() {
+    var pendientes = filtraTexto(DATA.mensajes.filter(function (m) { return m['Estado'] !== 'Enviado'; }));
+    var enviados = filtraTexto(DATA.mensajes.filter(function (m) { return m['Estado'] === 'Enviado'; }));
+
+    var h = '<div class="sec-title">Por revisar y enviar' +
+      (DATA.slackOk ? '' : ' <span style="font-weight:400;color:var(--muted)">(sin token de Slack: revisa, copia y pega — o configura SLACK_BOT_TOKEN en Config)</span>') +
+      '</div>';
+    h += tablaMensajes(pendientes, true);
+    h += '<div class="sec-title">Enviados</div>' + tablaMensajes(enviados.slice(0, 30), false);
+    return h;
+  }
+
+  function tablaMensajes(filas, conAcciones) {
+    if (!filas.length) return '<div class="empty">' + (conAcciones ? 'Nada pendiente de revisar. 🎉' : 'Todavía no hay mensajes enviados.') + '</div>';
+    var h = '<table><tr><th>Fecha</th><th>Destino</th><th>Relacionado</th><th>Mensaje</th><th>Estado</th><th>Respuestas</th><th></th></tr>';
+    filas.forEach(function (m) {
+      var texto = String(m['Texto (EN)'] || '');
+      var corto = texto.length > 140 ? texto.slice(0, 140) + '…' : texto;
+      h += '<tr><td class="num">' + esc(m['Fecha']) + '</td>' +
+        '<td>' + esc(m['Destino']) + '</td>' +
+        '<td>' + esc(m['Relacionado']) + '</td>' +
+        '<td class="msg-text">' + esc(corto) + '</td>' +
+        '<td>' + badgeColor(m['Estado'], COLOR_MENSAJE) + (m['Enviado'] ? '<br><span style="color:var(--muted);font-size:11px">' + esc(m['Enviado']) + '</span>' : '') + '</td>' +
+        '<td>' + esc(m['Respuestas'] || '—') + '</td>' +
+        '<td style="white-space:nowrap">' +
+          '<button class="small" onclick="abrirMsg(\'' + escAttr(m['ID']) + '\')">' + (conAcciones ? '✏️ Revisar y enviar' : '👁 Ver') + '</button>' +
+        '</td></tr>';
+    });
+    return h + '</table>';
+  }
+
+  // ---- 🌙 Fin de día ----
+  function vistaFinDia() {
+    if (!DATA.finDeDia.length) {
+      return '<div class="empty">🎉 No hay updates de Notion pendientes de hoy.<br>' +
+        '<span style="font-size:12px">Se componen con las interacciones de segmento «Enablement» registradas hoy.</span></div>';
+    }
+    var h = '<div class="sec-title">Updates de hoy para el Summer Enablement Tracker — edítalos y sincroniza (o copia y pega en Notion)</div>';
+    DATA.finDeDia.forEach(function (u, i) {
+      h += '<div style="padding:10px 12px;border-bottom:1px solid var(--hairline)">' +
+        '<div style="font-weight:700;margin-bottom:6px">' + esc(u.dealer) + '</div>' +
+        '<textarea id="fd-' + i + '" rows="3" style="width:100%">' + esc(u.comentario) + '</textarea></div>';
+    });
+    h += '<div style="padding:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">';
+    if (DATA.notionOk) {
+      h += '<button class="primary" onclick="sincronizarNotion()">🔄 Sincronizar con Notion</button>';
+    }
+    h += '<button onclick="copiarFinDia()">📋 Copiar todo</button>' +
+         '<button onclick="marcarFinDia()">✔ Marcar como actualizado</button>';
+    if (!DATA.notionOk) {
+      h += '<span style="font-size:12px;color:var(--muted)">Pega NOTION_TOKEN en la hoja Config para escribir en Notion automáticamente.</span>';
+    }
+    h += '</div>';
+    return h;
+  }
+
+  function updatesFinDia() {
+    return DATA.finDeDia.map(function (u, i) {
+      var caja = document.getElementById('fd-' + i);
+      return { dealer: u.dealer, comentario: caja ? caja.value.trim() : u.comentario, ids: u.ids };
+    }).filter(function (u) { return u.comentario; });
+  }
+  function sincronizarNotion() {
+    var updates = updatesFinDia();
+    if (!updates.length) { toast('No hay nada que sincronizar'); return; }
+    toast('Sincronizando con Notion…');
+    google.script.run.withSuccessHandler(function (r) {
+      pintar(r.data);
+      toast(r.errores.length ? '⚠ Con errores: ' + r.errores.join(' · ') : 'Notion actualizado ✔');
+    }).withFailureHandler(error).sincronizarFinDeDia(updates);
+  }
+  function copiarFinDia() {
+    var texto = updatesFinDia().map(function (u) { return u.dealer + '\n' + u.comentario; }).join('\n\n---\n\n');
+    copiarTexto(texto);
+  }
+  function marcarFinDia() {
+    if (!confirm('¿Marcar los updates de hoy como ya reflejados en Notion?')) return;
+    var ids = [];
+    DATA.finDeDia.forEach(function (u) { ids = ids.concat(u.ids); });
+    llamar('marcarFinDeDiaSincronizado', [ids], 'Marcado como actualizado ✔');
+  }
+
+  // ---- Modales y acciones CSM ----
+  function poblarSelectoresCSM() {
+    if (!DATA.tiposInteraccion) return; // servidor antiguo: el banner de versión ya avisa
+    var dl = document.getElementById('dlDealers');
+    dl.innerHTML = '';
+    DATA.dealers.forEach(function (d) {
+      var o = document.createElement('option'); o.value = d.nombre; dl.appendChild(o);
+    });
+    llenarSelect('iTipo', DATA.tiposInteraccion);
+    llenarSelect('iSegmento', DATA.segmentos);
+    var tipologias = DATA.tipologias.map(function (t) { return t.tipologia; });
+    llenarSelect('iTipologia', tipologias);
+    llenarSelect('tTipologia', tipologias);
+    document.getElementById('iFeatures').innerHTML = DATA.features.map(function (f) {
+      return '<label><input type="checkbox" value="' + escAttr(f) + '"> ' + esc(f) + '</label>';
+    }).join('');
+  }
+  function llenarSelect(id, valores) {
+    var sel = document.getElementById(id);
+    sel.innerHTML = '';
+    (valores || []).forEach(function (v) {
+      var o = document.createElement('option'); o.value = v; o.textContent = v; sel.appendChild(o);
+    });
+  }
+  function abrirOverlay(id) { document.getElementById(id).classList.add('open'); }
+  function cerrarOverlay(id) { document.getElementById(id).classList.remove('open'); }
+
+  function abrirModalInt(dealer) {
+    if (!DATA) return;
+    document.getElementById('iDealer').value = dealer || '';
+    document.getElementById('iResumen').value = '';
+    document.getElementById('iPendDealer').value = '';
+    document.getElementById('iPendMios').value = '';
+    document.getElementById('iFechaLimite').value = '';
+    document.getElementById('iNotas').value = '';
+    document.querySelectorAll('#iFeatures input').forEach(function (c) { c.checked = false; });
+    toggleSegmento();
+    abrirOverlay('modalInt');
+  }
+  function toggleSegmento() {
+    var seg = document.getElementById('iSegmento').value;
+    document.getElementById('iTipologiaWrap').style.display = seg === 'Ticket' ? '' : 'none';
+    document.getElementById('iFeaturesWrap').style.display = seg === 'Enablement' ? '' : 'none';
+  }
+  function guardarInteraccion() {
+    var datos = {
+      dealer: document.getElementById('iDealer').value,
+      tipo: document.getElementById('iTipo').value,
+      segmento: document.getElementById('iSegmento').value,
+      tipologia: document.getElementById('iTipologia').value,
+      features: Array.prototype.slice.call(document.querySelectorAll('#iFeatures input:checked'))
+        .map(function (c) { return c.value; }),
+      resumen: document.getElementById('iResumen').value,
+      pendientesDealer: document.getElementById('iPendDealer').value,
+      pendientesMios: document.getElementById('iPendMios').value,
+      fechaLimite: document.getElementById('iFechaLimite').value,
+      notas: document.getElementById('iNotas').value
+    };
+    if (!datos.dealer.trim()) { toast('Indica el dealer'); return; }
+    if (!datos.resumen.trim()) { toast('Escribe un resumen'); return; }
+    var btn = document.getElementById('btnGuardarInt');
+    btn.disabled = true;
+    google.script.run.withSuccessHandler(function (data) {
+      btn.disabled = false;
+      cerrarOverlay('modalInt');
+      pintar(data);
+      toast('Interacción registrada ✔ Revisa la pestaña Mensajes si generó borradores.');
+    }).withFailureHandler(function (e) { btn.disabled = false; error(e); }).registrarInteraccion(datos);
+  }
+
+  function abrirModalTicket() {
+    document.getElementById('tDealer').value = '';
+    document.getElementById('tDescripcion').value = '';
+    document.getElementById('tPublicar').checked = true;
+    abrirOverlay('modalTicket');
+  }
+  function guardarTicket() {
+    var datos = {
+      dealer: document.getElementById('tDealer').value,
+      origen: document.getElementById('tOrigen').value,
+      tipologia: document.getElementById('tTipologia').value,
+      descripcion: document.getElementById('tDescripcion').value,
+      publicar: document.getElementById('tPublicar').checked
+    };
+    if (!datos.dealer.trim()) { toast('Indica el dealer'); return; }
+    if (!datos.descripcion.trim()) { toast('Describe el problema'); return; }
+    var btn = document.getElementById('btnGuardarTicket');
+    btn.disabled = true;
+    google.script.run.withSuccessHandler(function (data) {
+      btn.disabled = false;
+      cerrarOverlay('modalTicket');
+      pintar(data);
+      toast('Ticket creado ✔');
+    }).withFailureHandler(function (e) { btn.disabled = false; error(e); }).crearTicket(datos);
+  }
+
+  function abrirMsg(id) {
+    var m = DATA.mensajes.filter(function (x) { return String(x['ID']) === String(id); })[0];
+    if (!m) return;
+    MSG_SEL = id;
+    document.getElementById('mMeta').textContent =
+      m['Destino'] + ' · ' + (m['Relacionado'] || '') + ' · ' + m['Estado'] +
+      (m['Respuestas'] ? ' · ' + m['Respuestas'] : '');
+    document.getElementById('mTexto').value = m['Texto (EN)'] || '';
+    var btn = document.getElementById('btnEnviarMsg');
+    var enviado = m['Estado'] === 'Enviado';
+    btn.style.display = enviado ? 'none' : '';
+    if (m['Destino'] === 'Gmail (dealer)') btn.textContent = '✉️ Crear borrador en Gmail';
+    else if (DATA.slackOk) btn.textContent = '🚀 Enviar a Slack';
+    else btn.textContent = '✔ Aprobar (y copiar)';
+    abrirOverlay('modalMsg');
+  }
+  function msgAprobarEnviar() {
+    var texto = document.getElementById('mTexto').value;
+    if (!texto.trim()) { toast('El mensaje está vacío'); return; }
+    var btn = document.getElementById('btnEnviarMsg');
+    btn.disabled = true;
+    toast('Enviando…');
+    google.script.run.withSuccessHandler(function (r) {
+      btn.disabled = false;
+      cerrarOverlay('modalMsg');
+      pintar(r.data);
+      if (r.enviado && r.via === 'slack') toast('Enviado a Slack ✔');
+      else if (r.enviado && r.via === 'gmail') toast('Borrador creado en Gmail ✉️ — revísalo y envía');
+      else { copiarTexto(r.texto); toast('Aprobado y copiado 📋 — pégalo en Slack y marca «Ya lo envié»'); }
+    }).withFailureHandler(function (e) { btn.disabled = false; error(e); }).aprobarYEnviarMensaje(MSG_SEL, texto);
+  }
+  function msgMarcarEnviado() {
+    cerrarOverlay('modalMsg');
+    llamar('marcarMensajeEnviado', [MSG_SEL], 'Marcado como enviado ✔');
+  }
+
+  function abrirResp(id) {
+    var t = DATA.tickets.filter(function (x) { return String(x['ID']) === String(id); })[0];
+    if (!t) return;
+    TICKET_SEL = id;
+    document.getElementById('rMeta').textContent =
+      t['Dealer'] + ' · ' + t['Tipología'] + ' · #' + t['Canal Slack'] +
+      (t['Slack ts'] ? ' (responderá en su thread)' : '');
+    document.getElementById('rTexto').value = 'Update on *' + t['Dealer'] + '*: ';
+    abrirOverlay('modalResp');
+  }
+  function guardarRespuesta() {
+    var texto = document.getElementById('rTexto').value;
+    if (!texto.trim()) { toast('Escribe la respuesta'); return; }
+    var btn = document.getElementById('btnGuardarResp');
+    btn.disabled = true;
+    google.script.run.withSuccessHandler(function (data) {
+      btn.disabled = false;
+      cerrarOverlay('modalResp');
+      pintar(data);
+      toast('Respuesta guardada en Mensajes ✉️ — revísala y envíala desde allí');
+    }).withFailureHandler(function (e) { btn.disabled = false; error(e); }).responderTicket(TICKET_SEL, texto);
+  }
+
+  function estadoTicket(id, estado) { llamar('actualizarTicket', [id, estado, ''], 'Ticket → ' + estado); }
+  function notaTicket(id) {
+    var nota = prompt('Nota para el ticket:');
+    if (nota === null || !nota.trim()) return;
+    llamar('actualizarTicket', [id, '', nota.trim()], 'Nota guardada 📝');
+  }
+  function tareaHecha(id) { llamar('marcarTarea', [id, true], 'Tarea completada ✔'); }
+
+  function copiarTexto(texto) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(function () { toast('Copiado 📋'); }, function () { copiarFallback(texto); });
+    } else {
+      copiarFallback(texto);
+    }
+  }
+  function copiarFallback(texto) {
+    var ta = document.createElement('textarea');
+    ta.value = texto;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); toast('Copiado 📋'); }
+    catch (e) { toast('No se pudo copiar automáticamente'); }
+    document.body.removeChild(ta);
   }
 
   cargar();

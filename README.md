@@ -1,7 +1,10 @@
-# 📋 Dealer Document Tracker
+# 📋 Dealer CSM Hub (antes: Dealer Document Tracker)
 
-Herramienta para centralizar y ordenar la recepción de documentación de más de 100 dealers
-(contratos de seguro, certificados, etc.) sin perderse entre decenas de correos diarios.
+Herramienta para centralizar el día a día de un CSM: la recepción de documentación de más de
+100 dealers (contratos de seguro, certificados, etc.), y — desde la v5 — **las llamadas y
+conversaciones con clientes segmentadas** (Enablement, Tickets de soporte, cambios de Website,
+Compliance), con mensajes en inglés generados automáticamente, envío a Slack tras tu revisión
+y el update de fin de día del **Summer Enablement Tracker de Notion** compuesto solo.
 
 Está organizada por **campañas**: cada casuística nueva (p. ej. *"Contratos de seguro - Jul 2026"*)
 es una campaña que creas en 1 minuto desde el dashboard, eligiendo qué documento pides y a qué
@@ -67,6 +70,10 @@ correos por el remitente.*
 En el editor, ejecuta **`instalarTriggers`**. A partir de ahí:
 - **`procesarCorreos`** se ejecuta cada 10 minutos.
 - **`actualizarSeguimientos`** recalcula cada mañana a las 7:00 quién necesita seguimiento.
+- **`refrescarRespuestasSlack`** lee cada 15 minutos las respuestas de los threads de Slack
+  (no hace nada si no has configurado el token).
+- **`prepararFinDeDia`** te deja a las 18:00 un borrador en Gmail con los updates de Notion
+  pendientes del día.
 
 ### 6. Publica el dashboard
 
@@ -92,6 +99,67 @@ A partir de ahí todo es automático: cuando un dealer responde con el documento
 *"Recibido - Por revisar"* dentro de la campaña correcta. Cuando termines una casuística,
 **cierra la campaña** desde su tarjeta: queda como historial y deja de generar seguimientos.
 
+## 🧭 Módulo CSM (v5): llamadas segmentadas, tickets, Slack y Notion
+
+Además del tracker de documentos, el dashboard incluye 5 pestañas nuevas para el trabajo de CSM:
+
+| Pestaña | Para qué sirve |
+|---|---|
+| **📅 Hoy** | Tu agenda del día (Google Calendar), las interacciones registradas hoy y las tareas pendientes (lo que te deben los dealers y lo que debes tú). |
+| **🚀 Enablement** | Historial de reuniones/llamadas de enablement por dealer, con el estado del update de Notion. |
+| **🎫 Tickets** | Tickets de soporte segmentados por tipología (bugs, compliance, line increases…), cada uno con su canal de Slack. |
+| **✉️ Mensajes** | Bandeja de revisión: todos los mensajes generados (en inglés) esperan aquí tu OK antes de salir. |
+| **🌙 Fin de día** | Compone el update diario del Summer Enablement Tracker de Notion (fecha + comentario por dealer) para sincronizarlo o copiarlo. |
+
+### El flujo en 30 segundos
+
+1. Terminas una llamada → **➕ Registrar interacción**: dealer, segmento, resumen y acuerdos
+   ("el dealer me debe…", "yo debo…" — una cosa por línea).
+2. Según el segmento, el sistema hace el resto:
+   - **Enablement** → crea las tareas, deja el update de Notion pendiente para el fin de día y,
+     si el dealer te debe algo, prepara un follow-up en inglés (borrador de Gmail).
+   - **Ticket** → crea el ticket y prepara el mensaje para **ES-TICKETS** (o el canal de su tipología).
+   - **Website** → crea el ticket y prepara el mensaje para **dealer-website-creation**
+     etiquetando a la responsable de webs.
+   - **Compliance** → crea el ticket y prepara el mensaje para **compliance-ops**.
+3. Pasas por **✉️ Mensajes**, editas si hace falta y pulsas **Enviar** (o **Copiar** si aún no
+   hay token de Slack). Las respuestas de los threads se trackean solas cada 15 min.
+4. Al final del día abres **🌙 Fin de día**: el comentario por dealer ya está escrito; lo
+   retocas y **Sincronizar con Notion** (o **Copiar todo**). A las 18:00 un trigger te deja
+   además un borrador en Gmail con el resumen, por si no abres el dashboard.
+
+> Nada se publica sin tu revisión: los mensajes de Slack y los updates de Notion siempre pasan
+> por ti primero.
+
+### Funciona desde el primer día sin tokens (modo copy-paste)
+
+Sin configurar nada más, el dashboard genera todos los mensajes en inglés y tú los copias con
+un clic. Para activar el envío y la sincronización automáticos:
+
+**Slack** (pide a un admin si no puedes crear apps):
+1. Crea una app en [api.slack.com/apps](https://api.slack.com/apps) → *From scratch* en el
+   workspace de INFINIT.
+2. En **OAuth & Permissions → Bot Token Scopes** añade: `chat:write`, `channels:history`,
+   `groups:history`, `channels:read`, `groups:read`.
+3. *Install to Workspace* y copia el **Bot User OAuth Token** (`xoxb-…`) en la hoja `Config` →
+   `SLACK_BOT_TOKEN`.
+4. Invita al bot a los tres canales (`/invite @tu-app` en ES-TICKETS, dealer-website-creation
+   y compliance-ops) y pega el **ID de cada canal** (detalles del canal → ID, empieza por `C` o `G`)
+   en `SLACK_CANAL_TICKETS`, `SLACK_CANAL_WEBSITE` y `SLACK_CANAL_COMPLIANCE`.
+5. (Opcional) `SLACK_USER_WEBSITE_OWNER`: member ID de la responsable de webs (perfil → ⋯ →
+   *Copy member ID*) para que el @mention funcione de verdad.
+
+**Notion**:
+1. Crea una integración interna en [notion.so/my-integrations](https://www.notion.so/my-integrations)
+   (workspace de INFINIT, permisos de lectura y escritura de contenido).
+2. Copia el token (`ntn_…`/`secret_…`) en `Config` → `NOTION_TOKEN`.
+3. En la página del **Summer Enablement Tracker**, menú ⋯ → *Connections* → añade tu integración.
+   `NOTION_DB_TRACKER` ya viene precargado con el ID de la base de datos del tracker.
+
+Las **tipologías de ticket** y su canal por defecto se editan en la hoja `Config`
+(columnas G/H), igual que los tipos de documento. La migración a Plaid y al Back Office de
+INFINIT podrá enchufarse más adelante añadiendo su origen en los tickets.
+
 ## 📖 Tu flujo de trabajo diario
 
 1. **Abre el dashboard.** Las tarjetas muestran el % de progreso de cada campaña; los KPIs, lo que requiere tu atención.
@@ -113,7 +181,11 @@ A partir de ahí todo es automático: cuando un dealer responde con el documento
 | **Campañas** | Cada casuística: documento pedido, fecha, estado (Activa/Cerrada), nº de dealers |
 | **Solicitudes** | Una fila por *dealer × campaña* con su estado, fechas, días sin respuesta y enlace al archivo (se actualiza sola) |
 | **Correos** | Registro de cada correo recibido de un dealer: fecha, asunto, adjuntos, enlace a Gmail (se actualiza sola) |
-| **Config** | Días para seguimiento, tipos de documento y palabras clave, firma de tus correos |
+| **Interacciones** | Cada llamada/reunión/mensaje con un dealer, con su segmento y acuerdos |
+| **Tareas** | Compromisos derivados de cada interacción (del dealer y tuyos) |
+| **Tickets** | Tickets de soporte con tipología, estado y canal de Slack |
+| **Mensajes** | Bandeja de mensajes en inglés: borrador → aprobado → enviado (con thread de Slack) |
+| **Config** | Días para seguimiento, tipos de documento, firma, tokens de Slack/Notion y tipologías de ticket |
 
 ## ✅ Prueba rápida tras instalar
 
@@ -146,7 +218,8 @@ A partir de ahí todo es automático: cuando un dealer responde con el documento
 
 ```
 apps-script/
-├── Code.gs           # Lógica: campañas, escaneo de Gmail, clasificación, Sheets, Drive, borradores
-├── Dashboard.html    # Dashboard web interactivo
-└── appsscript.json   # Manifiesto (zona horaria, permisos)
+├── Code.gs           # Lógica: campañas, escaneo de Gmail, clasificación, Sheets, Drive,
+│                     # borradores + módulo CSM (interacciones, tickets, Slack, Notion, fin de día)
+├── Dashboard.html    # Dashboard web interactivo (documentos + módulo CSM)
+└── appsscript.json   # Manifiesto (zona horaria, permisos: Gmail, Sheets, Drive, Calendar, APIs externas)
 ```
