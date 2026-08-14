@@ -1,0 +1,1298 @@
+<title>CSM Hub</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f4f6f9;
+    --surface: #ffffff;
+    --surface-2: #eef1f6;
+    --ink: #0e1116;
+    --ink-2: #454f5e;
+    --muted: #78839a;
+    --line: #dde2ea;
+    --line-soft: #eaeef4;
+    --accent: #2f57cf;
+    --accent-soft: #e6ecfc;
+    --enablement: #157a52;
+    --enablement-soft: #dcf1e8;
+    --ticket: #c0392b;
+    --ticket-soft: #fbe4e1;
+    --website: #2f57cf;
+    --website-soft: #e6ecfc;
+    --compliance: #a35a08;
+    --compliance-soft: #fcefdc;
+    --wait: #8a6300;
+    --wait-soft: #fdf2d4;
+    --shadow: 0 1px 2px rgba(14,17,22,.05), 0 8px 24px -12px rgba(14,17,22,.18);
+    --radius: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page: #0c0e13;
+      --surface: #14181f;
+      --surface-2: #1b202a;
+      --ink: #f2f4f8;
+      --ink-2: #b3bccc;
+      --muted: #7d8799;
+      --line: #262d3a;
+      --line-soft: #1e242f;
+      --accent: #7d9bff;
+      --accent-soft: #1a2340;
+      --enablement: #4bc491;
+      --enablement-soft: #13291f;
+      --ticket: #f08a7d;
+      --ticket-soft: #2e1917;
+      --website: #7d9bff;
+      --website-soft: #1a2340;
+      --compliance: #e0a45e;
+      --compliance-soft: #2b2013;
+      --wait: #dcb64a;
+      --wait-soft: #29230f;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0c0e13;
+    --surface: #14181f;
+    --surface-2: #1b202a;
+    --ink: #f2f4f8;
+    --ink-2: #b3bccc;
+    --muted: #7d8799;
+    --line: #262d3a;
+    --line-soft: #1e242f;
+    --accent: #7d9bff;
+    --accent-soft: #1a2340;
+    --enablement: #4bc491;
+    --enablement-soft: #13291f;
+    --ticket: #f08a7d;
+    --ticket-soft: #2e1917;
+    --website: #7d9bff;
+    --website-soft: #1a2340;
+    --compliance: #e0a45e;
+    --compliance-soft: #2b2013;
+    --wait: #dcb64a;
+    --wait-soft: #29230f;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+  h1, h2, h3 { margin: 0; font-weight: 650; letter-spacing: -.015em; text-wrap: balance; }
+
+  /* ---- Shell ---- */
+  .shell { max-width: 1240px; margin: 0 auto; padding: 18px 20px 60px; display: flex; flex-direction: column; gap: 16px; }
+  .topbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: baseline; gap: 9px; }
+  .brand h1 { font-size: 17px; }
+  .brand .sub { color: var(--muted); font-size: 12px; }
+  .grow { flex: 1; }
+
+  .conn { display: flex; gap: 6px; align-items: center; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11.5px; font-weight: 600; padding: 3px 9px;
+    border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
+  }
+  .pill .led { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex: none; }
+  .pill.ok .led { background: var(--enablement); }
+  .pill.bad .led { background: var(--ticket); }
+
+  button {
+    font: inherit; font-size: 13px; cursor: pointer; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 8px; padding: 6px 11px;
+    transition: border-color .12s, background .12s;
+  }
+  button:hover { border-color: var(--accent); }
+  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 1px;
+  }
+  button.primary { background: var(--accent); border-color: transparent; color: #fff; font-weight: 600; }
+  :root[data-theme="dark"] button.primary, :root:not([data-theme="light"]) button.primary { color: #0c0e13; }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) button.primary { color: #fff; } }
+  button.small { padding: 3px 8px; font-size: 12px; border-radius: 6px; }
+  button:disabled { opacity: .5; cursor: default; }
+  button.ghost { background: transparent; border-color: transparent; color: var(--ink-2); }
+  button.ghost:hover { background: var(--surface-2); border-color: transparent; }
+
+  input, select, textarea {
+    font: inherit; font-size: 13px; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 8px; padding: 7px 10px; width: 100%;
+  }
+  textarea { resize: vertical; line-height: 1.5; }
+  label.fld { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--ink-2); }
+
+  /* ---- KPIs ---- */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); gap: 10px; }
+  .kpi {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 11px 13px; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 2px;
+    box-shadow: var(--shadow);
+  }
+  .kpi .lbl { font-size: 11.5px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+  .kpi .stripe { width: 3px; height: 11px; border-radius: 2px; background: var(--muted); flex: none; }
+  .kpi .val { font-size: 24px; font-weight: 660; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+
+  /* ---- Tabs ---- */
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+  .tabs button {
+    border: none; background: none; border-radius: 0; padding: 9px 13px;
+    color: var(--muted); font-weight: 550; white-space: nowrap;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .tabs button:hover { color: var(--ink); border-color: var(--line); }
+  .tabs button[aria-selected="true"] { color: var(--ink); border-color: var(--accent); }
+  .tabs .n { font-size: 11px; color: var(--muted); margin-left: 5px; font-variant-numeric: tabular-nums; }
+
+  /* ---- Cards & tables ---- */
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .card + .card { margin-top: 12px; }
+  .card-h { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-bottom: 1px solid var(--line-soft); }
+  .card-h h2 { font-size: 13px; }
+  .card-h .hint { font-size: 12px; color: var(--muted); font-weight: 400; }
+  .scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--muted); padding: 8px 14px; border-bottom: 1px solid var(--line-soft); white-space: nowrap;
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--surface-2); }
+  td.acts { white-space: nowrap; text-align: right; }
+  td.wrap { max-width: 380px; white-space: pre-wrap; }
+  .dealer { font-weight: 600; }
+
+  .tag {
+    display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+    font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 6px;
+    background: var(--surface-2); color: var(--ink-2);
+  }
+  .tag[data-k="Enablement"] { background: var(--enablement-soft); color: var(--enablement); }
+  .tag[data-k="Ticket"], .tag[data-k="Abierto"] { background: var(--ticket-soft); color: var(--ticket); }
+  .tag[data-k="Website"], .tag[data-k="En curso"] { background: var(--website-soft); color: var(--website); }
+  .tag[data-k="Compliance"] { background: var(--compliance-soft); color: var(--compliance); }
+  .tag[data-k="Esperando dealer"], .tag[data-k="Borrador"], .tag[data-k="Pendiente"] { background: var(--wait-soft); color: var(--wait); }
+  .tag[data-k="Resuelto"], .tag[data-k="Enviado"], .tag[data-k="Hecho"], .tag[data-k="Sincronizado"] { background: var(--enablement-soft); color: var(--enablement); }
+
+  .who { font-size: 12px; color: var(--ink-2); }
+  .empty { padding: 34px 16px; text-align: center; color: var(--muted); font-size: 13px; }
+  .empty strong { display: block; color: var(--ink-2); font-weight: 600; margin-bottom: 3px; }
+
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .filters input[type="search"] { flex: 1; min-width: 170px; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    font-size: 12px; font-weight: 550; padding: 3px 10px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); cursor: pointer;
+  }
+  .chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+  /* ---- Notices ---- */
+  .notice {
+    display: flex; gap: 10px; align-items: flex-start; padding: 11px 14px;
+    border: 1px solid var(--line); border-left: 3px solid var(--muted);
+    border-radius: 8px; background: var(--surface); font-size: 13px;
+  }
+  .notice.warn { border-left-color: var(--wait); }
+  .notice.err { border-left-color: var(--ticket); }
+  .notice .t { font-weight: 600; }
+  .notice .d { color: var(--ink-2); margin-top: 1px; }
+  .notice button { margin-left: auto; flex: none; }
+
+  /* ---- Side panel ---- */
+  .scrim {
+    position: fixed; inset: 0; background: rgba(6,8,12,.42);
+    opacity: 0; pointer-events: none; transition: opacity .16s; z-index: 40;
+  }
+  .scrim.open { opacity: 1; pointer-events: auto; }
+  .panel {
+    position: fixed; top: 0; right: 0; height: 100%; width: min(480px, 100%);
+    background: var(--surface); border-left: 1px solid var(--line);
+    transform: translateX(100%); transition: transform .2s ease; z-index: 41;
+    display: flex; flex-direction: column;
+  }
+  .panel.open { transform: none; }
+  .panel-h { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--line-soft); }
+  .panel-h h2 { font-size: 14px; }
+  .panel-b { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 13px; flex: 1; }
+  .panel-f { padding: 12px 16px; border-top: 1px solid var(--line-soft); display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .checks { display: flex; flex-wrap: wrap; gap: 5px; }
+  .checks label {
+    font-size: 12px; padding: 3px 9px; border-radius: 999px;
+    border: 1px solid var(--line); cursor: pointer; color: var(--ink-2); user-select: none;
+  }
+  .checks input { display: none; }
+  .checks label:has(input:checked) { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+  .hintline { font-size: 11.5px; color: var(--muted); }
+
+  .fd-item { padding: 13px 14px; border-bottom: 1px solid var(--line-soft); display: flex; flex-direction: column; gap: 7px; }
+  .fd-item:last-child { border-bottom: none; }
+  .fd-head { display: flex; align-items: center; gap: 9px; }
+  .fd-head .dealer { font-size: 13.5px; }
+  .fd-meta { font-size: 11.5px; color: var(--muted); }
+  .fd-prev { font-size: 12px; color: var(--muted); border-left: 2px solid var(--line); padding-left: 9px; white-space: pre-wrap; max-height: 60px; overflow: hidden; }
+
+  #toast {
+    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%) translateY(8px);
+    background: var(--ink); color: var(--page); padding: 9px 16px; border-radius: 8px;
+    font-size: 13px; font-weight: 500; opacity: 0; transition: opacity .2s, transform .2s;
+    pointer-events: none; z-index: 60; max-width: 92vw; text-align: center;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%); }
+  .skel { color: var(--muted); font-size: 13px; padding: 30px 16px; text-align: center; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+  @media (max-width: 640px) {
+    .shell { padding: 14px 12px 50px; }
+    td.wrap { max-width: 220px; }
+    .row2 { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="shell">
+  <header class="topbar">
+    <div class="brand">
+      <h1>CSM Hub</h1>
+      <span class="sub" id="today"></span>
+    </div>
+    <span class="grow"></span>
+    <div class="conn">
+      <span class="pill" id="pill-notion"><span class="led"></span>Notion</span>
+      <span class="pill" id="pill-slack"><span class="led"></span>Slack</span>
+    </div>
+    <button class="ghost" id="btn-cfg" title="Ajustes">Ajustes</button>
+    <button id="btn-refresh">Actualizar</button>
+    <button class="primary" id="btn-new">Registrar interacción</button>
+  </header>
+
+  <div id="global-notice"></div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <nav class="tabs" id="tabs" role="tablist"></nav>
+
+  <div class="filters" id="filters">
+    <input type="search" id="q" placeholder="Buscar dealer, texto, tipología…" aria-label="Buscar">
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <main id="view"></main>
+</div>
+
+<div class="scrim" id="scrim"></div>
+
+<!-- Panel: registrar interacción -->
+<aside class="panel" id="panel-int" aria-hidden="true" aria-label="Registrar interacción">
+  <div class="panel-h">
+    <h2>Registrar interacción</h2>
+    <span class="grow"></span>
+    <button class="ghost" data-close>Cerrar</button>
+  </div>
+  <div class="panel-b">
+    <label class="fld">Dealer
+      <input id="i-dealer" list="dl-dealers" placeholder="Empieza a escribir…" autocomplete="off">
+      <datalist id="dl-dealers"></datalist>
+    </label>
+    <div class="row2">
+      <label class="fld">Tipo
+        <select id="i-tipo">
+          <option>Llamada</option><option>Reunión</option><option>WhatsApp</option><option>Email</option><option>Slack</option>
+        </select>
+      </label>
+      <label class="fld">Segmento
+        <select id="i-segmento">
+          <option>Enablement</option><option>Ticket</option><option>Website</option><option>Compliance</option><option>Otro</option>
+        </select>
+      </label>
+    </div>
+    <label class="fld" id="w-tipologia" hidden>Tipología del ticket
+      <select id="i-tipologia"></select>
+    </label>
+    <div id="w-features">
+      <div class="hintline" style="margin-bottom:5px">Capabilities tratadas</div>
+      <div class="checks" id="i-features"></div>
+    </div>
+    <label class="fld">Resumen
+      <textarea id="i-resumen" rows="3" placeholder="Qué se ha hablado o cuál es el problema"></textarea>
+    </label>
+    <label class="fld">El dealer me tiene que pasar…
+      <textarea id="i-pend-dealer" rows="3" placeholder="Una cosa por línea&#10;Meta Business access&#10;Coches.net credentials"></textarea>
+      <span class="hintline">Cada línea genera una tarea y entra en el follow-up en inglés.</span>
+    </label>
+    <label class="fld">Yo tengo que…
+      <textarea id="i-pend-mio" rows="2" placeholder="Una cosa por línea"></textarea>
+    </label>
+    <label class="fld">Fecha límite (opcional)
+      <input type="date" id="i-limite">
+    </label>
+  </div>
+  <div class="panel-f">
+    <button data-close>Cancelar</button>
+    <button class="primary" id="i-save">Guardar</button>
+  </div>
+</aside>
+
+<!-- Panel: revisar mensaje -->
+<aside class="panel" id="panel-msg" aria-hidden="true" aria-label="Revisar mensaje">
+  <div class="panel-h">
+    <h2 id="m-title">Revisar mensaje</h2>
+    <span class="grow"></span>
+    <button class="ghost" data-close>Cerrar</button>
+  </div>
+  <div class="panel-b">
+    <div class="hintline" id="m-meta"></div>
+    <label class="fld">Mensaje (se envía tal cual)
+      <textarea id="m-texto" rows="12"></textarea>
+    </label>
+    <div class="hintline" id="m-warn"></div>
+  </div>
+  <div class="panel-f">
+    <button id="m-copy">Copiar</button>
+    <button id="m-sent">Marcar enviado</button>
+    <button class="primary" id="m-send">Enviar a Slack</button>
+  </div>
+</aside>
+
+<!-- Panel: nuevo ticket -->
+<aside class="panel" id="panel-tic" aria-hidden="true" aria-label="Nuevo ticket">
+  <div class="panel-h">
+    <h2>Nuevo ticket</h2>
+    <span class="grow"></span>
+    <button class="ghost" data-close>Cerrar</button>
+  </div>
+  <div class="panel-b">
+    <label class="fld">Dealer
+      <input id="t-dealer" list="dl-dealers" placeholder="Empieza a escribir…" autocomplete="off">
+    </label>
+    <div class="row2">
+      <label class="fld">Origen
+        <select id="t-origen">
+          <option>HubSpot-WhatsApp</option><option>Slack</option><option>Email</option><option>Llamada</option><option>Plaid</option>
+        </select>
+      </label>
+      <label class="fld">Tipología
+        <select id="t-tipologia"></select>
+      </label>
+    </div>
+    <label class="fld">Descripción del problema
+      <textarea id="t-desc" rows="4"></textarea>
+    </label>
+    <label class="fld" style="flex-direction:row;align-items:center;gap:7px">
+      <input type="checkbox" id="t-post" checked style="width:auto">
+      Preparar el mensaje para su canal de Slack
+    </label>
+  </div>
+  <div class="panel-f">
+    <button data-close>Cancelar</button>
+    <button class="primary" id="t-save">Crear ticket</button>
+  </div>
+</aside>
+
+<!-- Panel: responder ticket -->
+<aside class="panel" id="panel-resp" aria-hidden="true" aria-label="Responder ticket">
+  <div class="panel-h">
+    <h2>Responder en Slack</h2>
+    <span class="grow"></span>
+    <button class="ghost" data-close>Cerrar</button>
+  </div>
+  <div class="panel-b">
+    <div class="hintline" id="r-meta"></div>
+    <label class="fld">Respuesta
+      <textarea id="r-texto" rows="8"></textarea>
+    </label>
+  </div>
+  <div class="panel-f">
+    <button data-close>Cancelar</button>
+    <button class="primary" id="r-save">Guardar en Mensajes</button>
+  </div>
+</aside>
+
+<!-- Panel: ajustes -->
+<aside class="panel" id="panel-cfg" aria-hidden="true" aria-label="Ajustes">
+  <div class="panel-h">
+    <h2>Ajustes</h2>
+    <span class="grow"></span>
+    <button class="ghost" data-close>Cerrar</button>
+  </div>
+  <div class="panel-b">
+    <div class="notice">
+      <div>
+        <div class="t">Canales de Slack</div>
+        <div class="d">dealer-website-creation y compliance-ops ya están configurados. ES-TICKETS es un grupo privado, así que necesita su ID: ábrelo en Slack → nombre del canal → abajo del todo verás el ID (empieza por C o G).</div>
+      </div>
+    </div>
+    <label class="fld">ID del canal ES-TICKETS
+      <input id="c-tickets" placeholder="C01234ABCDE" autocomplete="off">
+    </label>
+    <label class="fld">ID de dealer-website-creation
+      <input id="c-web" autocomplete="off">
+    </label>
+    <label class="fld">ID de compliance-ops
+      <input id="c-comp" autocomplete="off">
+    </label>
+    <label class="fld">Usuario de Slack a etiquetar para webs
+      <input id="c-webowner" autocomplete="off">
+      <span class="hintline">Se inserta como &lt;@ID&gt; al pedir cambios de web.</span>
+    </label>
+    <label class="fld">Firma de los follow-ups por email
+      <input id="c-firma" autocomplete="off">
+    </label>
+  </div>
+  <div class="panel-f">
+    <button data-close>Cancelar</button>
+    <button class="primary" id="c-save">Guardar ajustes</button>
+  </div>
+</aside>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------------------------------------------------------------
+  // Constantes: data sources de Notion y canales de Slack ya resueltos
+  // ---------------------------------------------------------------
+  const NOTION = "Notion", SLACK = "Slack";
+  const DS = {
+    interacciones: "collection://22853e2b-64b8-4775-9acf-531d840e0ccf",
+    tareas:        "collection://077b1faa-0515-428a-a5c6-738c235226bc",
+    tickets:       "collection://b4888461-0547-4043-9043-c66739978bf0",
+    mensajes:      "collection://cf41de2f-ddc4-4633-860a-7f8645a66f89",
+    tracker:       "collection://6765b148-0481-42da-91c6-aa4654223798"
+  };
+  const CFG_DEFAULT = {
+    canalTickets: "",
+    canalWeb: "C0A7HDHAA9L",
+    canalCompliance: "C06TEST9SFM",
+    webOwner: "U0ACB8YKPNV",
+    firma: "Best,\nManuel"
+  };
+  const TIPOLOGIAS = ["Bugs DMS","Bugs Non-DMS","Payments","Billing","Backoffice","Compliance",
+                      "Line Increases","KYS","Exceptions","Website","Otro"];
+  const CANAL_POR_TIPOLOGIA = {
+    "Compliance":"compliance-ops", "Line Increases":"compliance-ops", "KYS":"compliance-ops",
+    "Exceptions":"compliance-ops", "Website":"dealer-website-creation"
+  };
+  const FEATURES = ["Website","Multiposting","Voice AI","Whatsapp API","CRM",
+                    "Accounting Integration","Invoicing","Background AI","Custom AI Agent","Custom Templates"];
+
+  // ---------------------------------------------------------------
+  // Estado
+  // ---------------------------------------------------------------
+  const S = {
+    mcp: null, ready: false,
+    conn: { Notion: "…", Slack: "…" },
+    cfg: { ...CFG_DEFAULT },
+    tab: "hoy",
+    q: "", chip: "",
+    dealers: [], interacciones: [], tareas: [], tickets: [], mensajes: [],
+    err: {},            // slice -> McpError
+    finDia: null,       // [{dealer, comentario, ids:[url], filas:n}]
+    msgSel: null, ticSel: null,
+    loading: true
+  };
+
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const hoyISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
+  const ddmm = () => { const d = new Date(); return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`; };
+  const fmtFecha = iso => { if (!iso) return "—"; const p = String(iso).slice(0,10).split("-"); return p.length===3 ? `${p[2]}/${p[1]}` : iso; };
+  const lineas = t => String(t||"").split("\n").map(x=>x.trim()).filter(Boolean);
+  const pageId = url => String(url||"").split("/").pop().split("?")[0];
+
+  function toast(msg) {
+    const t = $("#toast");
+    t.textContent = msg; t.classList.add("show");
+    clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 4000);
+  }
+
+  // ---------------------------------------------------------------
+  // Errores: cada código tiene su arreglo concreto
+  // ---------------------------------------------------------------
+  function explica(e) {
+    const srv = e && e.server ? e.server : "el conector";
+    switch (e && e.code) {
+      case "needs_reauth":
+        return { t: `Hay que volver a conectar ${srv}`, d: `La sesión de ${srv} ha caducado. Ve a claude.ai → Ajustes → Conectores y reconéctalo.`, dur: true };
+      case "server_not_connected":
+        return { t: `Falta el conector de ${srv}`, d: `Añade ${srv} en claude.ai → Ajustes → Conectores para que el dashboard pueda leer y escribir.`, dur: true };
+      case "selection_required":
+        return { t: `Elige qué ${srv} usar`, d: `Tienes más de una conexión de ${srv}. Claude te lo preguntará; si cerraste el aviso, recarga la página.`, dur: true };
+      case "blocked_by_policy":
+      case "approval_required":
+        return { t: `${srv} está restringido`, d: "La política de tu organización no permite esta acción desde una página publicada.", dur: true };
+      case "not_in_manifest":
+        return { t: "Acción no declarada", d: "Esta página no tiene permiso para usar esa herramienta. Avisa para republicarla.", dur: true };
+      case "tool_error":
+        return { t: "El conector ha rechazado la operación", d: e.message || "Revisa los datos e inténtalo de nuevo.", dur: false };
+      case "server_unavailable":
+        return { t: `${srv} no responde ahora mismo`, d: "Suele ser temporal. Vuelve a intentarlo en unos segundos.", dur: false };
+      case "not_granted":
+      case "capability_disabled":
+      case "capability_removed":
+        return { t: "Sin acceso a tus conectores", d: "Abre esta página desde claude.ai con tu sesión iniciada para que pueda usar Notion y Slack.", dur: true };
+      case "cancelled":
+        return { t: "Operación cancelada", d: "No se sabe si llegó a ejecutarse: comprueba antes de repetirla.", dur: false };
+      default:
+        return { t: "No se ha podido completar", d: (e && e.message) || "Error desconocido.", dur: false };
+    }
+  }
+  function noticeHTML(e, extra) {
+    const x = explica(e);
+    return `<div class="notice ${x.dur ? "err" : "warn"}">
+      <div><div class="t">${esc(x.t)}</div><div class="d">${esc(x.d)}</div></div>
+      ${extra || ""}
+    </div>`;
+  }
+
+  // ---------------------------------------------------------------
+  // Capa MCP
+  // ---------------------------------------------------------------
+  async function sql(dsUrl, query, params) {
+    const r = await S.mcp.callTool(NOTION, "notion-query-data-sources",
+      { data: { mode: "sql", data_source_urls: [dsUrl], query, params: params || [] } },
+      { cache: { staleTime: 4000 } });
+    const p = r && r.payload;
+    return (p && Array.isArray(p.results)) ? p.results : [];
+  }
+  async function crearFila(dataSourceId, properties) {
+    const r = await S.mcp.callTool(NOTION, "notion-create-pages", {
+      parent: { type: "data_source_id", data_source_id: dataSourceId },
+      pages: [{ properties }]
+    }, { cache: false });
+    const p = r && r.payload;
+    return (p && p.pages && p.pages[0]) || null;
+  }
+  async function actualizarFila(id, properties) {
+    return S.mcp.callTool(NOTION, "notion-update-page",
+      { page_id: id, command: "update_properties", properties }, { cache: false });
+  }
+  async function enviarSlack(channelId, message, threadTs) {
+    const input = { channel_id: channelId, message };
+    if (threadTs) input.thread_ts = threadTs;
+    const r = await S.mcp.callTool(SLACK, "slack_send_message", input, { cache: false });
+    const p = (r && r.payload) || {};
+    const ctx = p.message_context || {};
+    return { ts: ctx.message_ts || "", canal: ctx.channel_id || channelId, link: p.message_link || "" };
+  }
+  const dsId = url => url.replace("collection://", "");
+
+  function canalId(destino) {
+    if (destino === "ES-TICKETS") return S.cfg.canalTickets;
+    if (destino === "dealer-website-creation") return S.cfg.canalWeb;
+    if (destino === "compliance-ops") return S.cfg.canalCompliance;
+    return "";
+  }
+
+  // ---------------------------------------------------------------
+  // Plantillas (en inglés — se editan antes de enviar)
+  // ---------------------------------------------------------------
+  const T = {
+    followUp: (pend) =>
+      "Hi team,\n\nThanks a lot for your time today. As agreed, could you please send us the following so we can move forward with the setup:\n\n" +
+      pend.map(p => `• ${p}`).join("\n") +
+      "\n\nAs soon as we receive it we'll continue on our side. Thanks!\n\n" + S.cfg.firma,
+    website: (dealer, cambios) =>
+      (S.cfg.webOwner ? `<@${S.cfg.webOwner}> ` : "") +
+      `the dealer *${dealer}* asked for the following changes on their website:\n\n` +
+      cambios.map(c => `• ${c}`).join("\n") +
+      "\n\nCould you apply them when you get a chance? Happy to clarify anything. Thanks!",
+    compliance: (dealer, desc) =>
+      `Hi team! Request for *${dealer}*:\n\n${desc}\n\nCould you take a look and confirm the next steps? Thanks a lot!`,
+    ticket: (dealer, tip, desc, origen) =>
+      `*${dealer}* — ${tip}${origen ? ` (via ${origen})` : ""}\n\n${desc}\n\nI'm following up with the dealer; any input from your side is welcome.`
+  };
+
+  // ---------------------------------------------------------------
+  // Carga de datos
+  // ---------------------------------------------------------------
+  const Q = {
+    dealers: `SELECT DISTINCT Dealer AS dealer FROM "${DS.tracker}" WHERE Dealer IS NOT NULL ORDER BY Dealer`,
+    interacciones: `SELECT url, Dealer AS dealer, "date:Fecha:start" AS fecha, Tipo AS tipo, Segmento AS segmento,
+        Features AS features, Resumen AS resumen, "Pendiente dealer" AS pdealer, "Pendiente mio" AS pmio,
+        "Estado Notion" AS notion FROM "${DS.interacciones}" ORDER BY createdTime DESC LIMIT 200`,
+    tareas: `SELECT url, Descripcion AS desc_, Dealer AS dealer, Quien AS quien, Segmento AS segmento,
+        "date:Fecha limite:start" AS limite, Estado AS estado FROM "${DS.tareas}" ORDER BY createdTime DESC LIMIT 300`,
+    tickets: `SELECT url, Descripcion AS desc_, Dealer AS dealer, "date:Fecha:start" AS fecha, Origen AS origen,
+        Tipologia AS tipologia, Estado AS estado, Canal AS canal, "Slack ts" AS ts, Notas AS notas
+        FROM "${DS.tickets}" ORDER BY createdTime DESC LIMIT 200`,
+    mensajes: `SELECT url, Texto AS texto, "date:Fecha:start" AS fecha, Destino AS destino, Relacionado AS rel,
+        Estado AS estado, "Canal ID" AS canal, "Thread ts" AS ts, Enviado AS enviado
+        FROM "${DS.mensajes}" ORDER BY createdTime DESC LIMIT 100`
+  };
+
+  async function cargarSlice(nombre, ds, query) {
+    try {
+      const rows = await sql(ds, query);
+      S[nombre] = rows;
+      delete S.err[nombre];
+      if (ds === DS.tracker || nombre === "dealers") S.conn.Notion = "ok";
+      else S.conn.Notion = "ok";
+    } catch (e) {
+      S.err[nombre] = e;
+      if (["needs_reauth","server_not_connected","selection_required","not_granted",
+           "capability_disabled","server_not_found"].includes(e && e.code)) S.conn.Notion = "bad";
+    }
+  }
+
+  async function cargarTodo() {
+    if (!S.mcp) return;
+    S.loading = true; render();
+    await Promise.all([
+      cargarSlice("dealers", DS.tracker, Q.dealers),
+      cargarSlice("interacciones", DS.interacciones, Q.interacciones),
+      cargarSlice("tareas", DS.tareas, Q.tareas),
+      cargarSlice("tickets", DS.tickets, Q.tickets),
+      cargarSlice("mensajes", DS.mensajes, Q.mensajes)
+    ]);
+    S.finDia = componerFinDia();
+    S.loading = false;
+    pintarDealers();
+    render();
+  }
+
+  async function recargar() {
+    try { await S.mcp.invalidate(NOTION, "notion-query-data-sources"); } catch (_) {}
+    await cargarTodo();
+  }
+
+  // ---------------------------------------------------------------
+  // Fin de día: agrupa lo de hoy por dealer
+  // ---------------------------------------------------------------
+  function componerFinDia() {
+    const hoy = hoyISO();
+    const porDealer = new Map();
+    for (const i of S.interacciones) {
+      if (i.segmento !== "Enablement") continue;
+      if (i.notion === "Sincronizado") continue;
+      if (String(i.fecha || "").slice(0, 10) !== hoy) continue;
+      const k = i.dealer;
+      if (!porDealer.has(k)) porDealer.set(k, { dealer: k, partes: [], ids: [] });
+      const g = porDealer.get(k);
+      g.ids.push(i.url);
+      let txt = i.resumen || "";
+      const pd = lineas(i.pdealer), pm = lineas(i.pmio);
+      if (pd.length) txt += ` Waiting on dealer: ${pd.join("; ")}.`;
+      if (pm.length) txt += ` Next on our side: ${pm.join("; ")}.`;
+      g.partes.push(txt.trim());
+    }
+    return [...porDealer.values()]
+      .map(g => ({ dealer: g.dealer, comentario: g.partes.join(" — "), ids: g.ids }))
+      .sort((a, b) => a.dealer.localeCompare(b.dealer));
+  }
+
+  // ---------------------------------------------------------------
+  // Vistas
+  // ---------------------------------------------------------------
+  const TABS = [
+    { k: "hoy",        t: "Hoy" },
+    { k: "enablement", t: "Enablement" },
+    { k: "tickets",    t: "Tickets" },
+    { k: "mensajes",   t: "Mensajes" },
+    { k: "findia",     t: "Fin de día" }
+  ];
+
+  function conteos() {
+    const hoy = hoyISO();
+    const intHoy = S.interacciones.filter(i => String(i.fecha||"").slice(0,10) === hoy);
+    const tarPend = S.tareas.filter(t => t.estado !== "Hecho");
+    return {
+      hoy: intHoy.length,
+      enablement: S.interacciones.filter(i => i.segmento === "Enablement").length,
+      tickets: S.tickets.filter(t => t.estado !== "Resuelto").length,
+      mensajes: S.mensajes.filter(m => m.estado !== "Enviado").length,
+      findia: (S.finDia || []).length,
+      meDeben: tarPend.filter(t => t.quien === "Dealer").length,
+      debo: tarPend.filter(t => t.quien === "Yo").length,
+      intHoy, tarPend
+    };
+  }
+
+  function filtra(rows, campos) {
+    const q = S.q.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter(r => campos.some(c => String(r[c] ?? "").toLowerCase().includes(q)));
+  }
+
+  function tag(v) { return v ? `<span class="tag" data-k="${esc(v)}">${esc(v)}</span>` : "—"; }
+
+  function tablaInteracciones(rows) {
+    if (!rows.length) return vacio("Nada registrado todavía", "Pulsa «Registrar interacción» después de tu próxima llamada.");
+    return `<div class="scroll"><table><thead><tr>
+      <th>Fecha</th><th>Dealer</th><th>Tipo</th><th>Segmento</th><th>Resumen</th><th>Acuerdos</th><th>Notion</th>
+    </tr></thead><tbody>${rows.map(i => {
+      const pd = lineas(i.pdealer), pm = lineas(i.pmio);
+      const ac = [pd.length ? `Dealer: ${pd.join("; ")}` : "", pm.length ? `Yo: ${pm.join("; ")}` : ""].filter(Boolean).join("\n");
+      return `<tr>
+        <td class="mono">${esc(fmtFecha(i.fecha))}</td>
+        <td class="dealer">${esc(i.dealer)}</td>
+        <td>${esc(i.tipo || "")}</td>
+        <td>${tag(i.segmento)}</td>
+        <td class="wrap">${esc(i.resumen || "")}</td>
+        <td class="wrap who">${esc(ac || "—")}</td>
+        <td>${i.segmento === "Enablement" ? tag(i.notion || "Pendiente") : "—"}</td>
+      </tr>`;
+    }).join("")}</tbody></table></div>`;
+  }
+
+  function tablaTareas(rows) {
+    if (!rows.length) return vacio("Sin tareas pendientes", "Todo lo acordado está cerrado.");
+    return `<div class="scroll"><table><thead><tr>
+      <th>Dealer</th><th>Quién</th><th>Tarea</th><th>Segmento</th><th>Límite</th><th></th>
+    </tr></thead><tbody>${rows.map(t => `<tr>
+      <td class="dealer">${esc(t.dealer || "")}</td>
+      <td class="who">${t.quien === "Dealer" ? "Dealer" : "Yo"}</td>
+      <td>${esc(t.desc_ || "")}</td>
+      <td>${tag(t.segmento)}</td>
+      <td class="mono">${esc(fmtFecha(t.limite))}</td>
+      <td class="acts"><button class="small" data-act="tarea-hecha" data-id="${esc(pageId(t.url))}">Hecha</button></td>
+    </tr>`).join("")}</tbody></table></div>`;
+  }
+
+  function vacio(t, d) { return `<div class="empty"><strong>${esc(t)}</strong>${esc(d)}</div>`; }
+
+  function seccion(titulo, hint, cuerpo, err, slice) {
+    const head = `<div class="card-h"><h2>${esc(titulo)}</h2>${hint ? `<span class="hint">${esc(hint)}</span>` : ""}</div>`;
+    const body = err
+      ? `<div style="padding:12px">${noticeHTML(err, `<button data-act="reintentar" data-slice="${esc(slice||"")}">Reintentar</button>`)}</div>`
+      : cuerpo;
+    return `<div class="card">${head}${body}</div>`;
+  }
+
+  function vistaHoy() {
+    const c = conteos();
+    const int = filtra(c.intHoy, ["dealer","resumen","segmento","tipo"]);
+    const tar = filtra(c.tarPend, ["dealer","desc_","segmento"]);
+    return seccion("Interacciones de hoy", "", tablaInteracciones(int), S.err.interacciones, "interacciones")
+         + seccion("Tareas abiertas", "de todas las fechas", tablaTareas(tar), S.err.tareas, "tareas");
+  }
+
+  function vistaEnablement() {
+    const rows = filtra(S.interacciones.filter(i => i.segmento === "Enablement"), ["dealer","resumen","tipo"]);
+    const tar = filtra(S.tareas.filter(t => t.estado !== "Hecho" && t.segmento === "Enablement"), ["dealer","desc_"]);
+    return seccion("Historial de enablement", "el update diario se compone en «Fin de día»", tablaInteracciones(rows), S.err.interacciones, "interacciones")
+         + seccion("Pendientes de enablement", "", tablaTareas(tar), S.err.tareas, "tareas");
+  }
+
+  function vistaTickets() {
+    const abiertos = S.chip ? S.tickets.filter(t => t.estado === S.chip) : S.tickets.filter(t => t.estado !== "Resuelto");
+    const rows = filtra(abiertos, ["dealer","desc_","tipologia","notas","origen"]);
+    const cuerpo = rows.length ? `<div class="scroll"><table><thead><tr>
+        <th>Fecha</th><th>Dealer</th><th>Tipología</th><th>Canal</th><th>Descripción</th><th>Estado</th><th></th>
+      </tr></thead><tbody>${rows.map(t => {
+        const id = esc(pageId(t.url));
+        return `<tr>
+          <td class="mono">${esc(fmtFecha(t.fecha))}</td>
+          <td class="dealer">${esc(t.dealer || "")}</td>
+          <td>${esc(t.tipologia || "")}</td>
+          <td class="who">#${esc(t.canal || "")}</td>
+          <td class="wrap">${esc(t.desc_ || "")}${t.notas ? `<div class="who" style="margin-top:3px">${esc(t.notas)}</div>` : ""}</td>
+          <td>${tag(t.estado)}</td>
+          <td class="acts">
+            <button class="small" data-act="responder" data-id="${id}">Responder</button>
+            ${t.estado !== "Esperando dealer" ? `<button class="small" data-act="tic-estado" data-id="${id}" data-v="Esperando dealer" title="Esperando al dealer">Espera</button>` : ""}
+            ${t.estado !== "Resuelto" ? `<button class="small" data-act="tic-estado" data-id="${id}" data-v="Resuelto">Resolver</button>` : ""}
+          </td>
+        </tr>`;
+      }).join("")}</tbody></table></div>`
+      : vacio("Sin tickets" + (S.chip ? ` en «${S.chip}»` : " abiertos"), "Los tickets que registres aparecerán aquí.");
+    return seccion("Tickets", "", cuerpo, S.err.tickets, "tickets");
+  }
+
+  function tablaMensajes(rows, accionable) {
+    if (!rows.length) return vacio(accionable ? "Nada por revisar" : "Todavía no has enviado nada",
+      accionable ? "Los mensajes se generan solos al registrar interacciones y tickets." : "");
+    return `<div class="scroll"><table><thead><tr>
+      <th>Fecha</th><th>Destino</th><th>Sobre</th><th>Mensaje</th><th>Estado</th><th></th>
+    </tr></thead><tbody>${rows.map(m => {
+      const corto = String(m.texto || "").replace(/\s+/g, " ").slice(0, 120);
+      return `<tr>
+        <td class="mono">${esc(fmtFecha(m.fecha))}</td>
+        <td>${esc(m.destino || "")}</td>
+        <td class="who">${esc(m.rel || "")}</td>
+        <td class="wrap">${esc(corto)}${String(m.texto||"").length > 120 ? "…" : ""}</td>
+        <td>${tag(m.estado)}${m.enviado ? `<div class="who mono" style="margin-top:2px">${esc(m.enviado)}</div>` : ""}</td>
+        <td class="acts"><button class="small" data-act="ver-msg" data-id="${esc(pageId(m.url))}">${accionable ? "Revisar" : "Ver"}</button></td>
+      </tr>`;
+    }).join("")}</tbody></table></div>`;
+  }
+
+  function vistaMensajes() {
+    const pend = filtra(S.mensajes.filter(m => m.estado !== "Enviado"), ["texto","destino","rel"]);
+    const env = filtra(S.mensajes.filter(m => m.estado === "Enviado"), ["texto","destino","rel"]).slice(0, 25);
+    const aviso = S.conn.Slack === "bad"
+      ? `<div style="padding:12px">${noticeHTML({ code: "server_not_connected", server: "Slack" })}</div>` : "";
+    return aviso
+         + seccion("Por revisar y enviar", "nada sale sin tu OK", tablaMensajes(pend, true), S.err.mensajes, "mensajes")
+         + seccion("Enviados", "", tablaMensajes(env, false), null);
+  }
+
+  function vistaFinDia() {
+    const fd = S.finDia || [];
+    if (S.err.interacciones) return seccion("Fin de día", "", "", S.err.interacciones, "interacciones");
+    if (!fd.length) {
+      return seccion("Fin de día", "", vacio("No hay nada pendiente de volcar a Notion",
+        "Aquí aparecen las interacciones de enablement de hoy que aún no están en el tracker."), null);
+    }
+    const items = fd.map((u, idx) => `<div class="fd-item">
+        <div class="fd-head">
+          <span class="dealer">${esc(u.dealer)}</span>
+          <span class="fd-meta" id="fd-cap-${idx}">se escribirá en todas sus capabilities</span>
+        </div>
+        <textarea id="fd-${idx}" rows="3">${esc(u.comentario)}</textarea>
+      </div>`).join("");
+    const acciones = `<div style="padding:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="primary" data-act="fd-sync">Escribir en Notion</button>
+        <button data-act="fd-copy">Copiar todo</button>
+        <span class="hintline">Se añade <span class="mono">${esc(ddmm())}:</span> delante y se conserva todo el histórico anterior.</span>
+      </div>`;
+    return seccion("Updates de hoy para el Summer Enablement Tracker",
+      `${fd.length} dealer${fd.length>1?"s":""}`, items + acciones, null);
+  }
+
+  // ---------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------
+  function render() {
+    const c = conteos();
+    $("#today").textContent = new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
+
+    for (const [srv, el] of [["Notion", $("#pill-notion")], ["Slack", $("#pill-slack")]]) {
+      el.className = "pill" + (S.conn[srv] === "ok" ? " ok" : S.conn[srv] === "bad" ? " bad" : "");
+      el.lastChild.textContent = srv;
+    }
+
+    $("#kpis").innerHTML = [
+      ["Interacciones hoy", c.hoy, "var(--accent)", "hoy"],
+      ["Tickets abiertos", c.tickets, "var(--ticket)", "tickets"],
+      ["Mensajes por revisar", c.mensajes, "var(--wait)", "mensajes"],
+      ["Me deben los dealers", c.meDeben, "var(--compliance)", "hoy"],
+      ["Tengo que hacer yo", c.debo, "var(--enablement)", "hoy"],
+      ["Pendiente en Notion", c.findia, "var(--muted)", "findia"]
+    ].map(([l, v, col, tab]) =>
+      `<button class="kpi" data-act="tab" data-v="${tab}">
+        <span class="lbl"><span class="stripe" style="background:${col}"></span>${esc(l)}</span>
+        <span class="val">${v}</span>
+      </button>`).join("");
+
+    $("#tabs").innerHTML = TABS.map(t =>
+      `<button role="tab" aria-selected="${S.tab === t.k}" data-act="tab" data-v="${t.k}">
+        ${esc(t.t)}<span class="n">${c[t.k] ?? 0}</span>
+      </button>`).join("");
+
+    $("#chips").innerHTML = S.tab === "tickets"
+      ? ["Abierto","En curso","Esperando dealer","Resuelto"].map(e =>
+          `<button class="chip" aria-pressed="${S.chip === e}" data-act="chip" data-v="${esc(e)}">${esc(e)}</button>`).join("")
+      : "";
+    $("#filters").style.display = ["hoy","enablement","tickets","mensajes"].includes(S.tab) ? "" : "none";
+
+    if (!S.ready) {
+      $("#view").innerHTML = `<div class="card"><div class="skel">Conectando con Notion y Slack…</div></div>`;
+      return;
+    }
+    if (S.loading && !S.interacciones.length && !Object.keys(S.err).length) {
+      $("#view").innerHTML = `<div class="card"><div class="skel">Cargando tus datos…</div></div>`;
+      return;
+    }
+    $("#view").innerHTML =
+      S.tab === "hoy" ? vistaHoy() :
+      S.tab === "enablement" ? vistaEnablement() :
+      S.tab === "tickets" ? vistaTickets() :
+      S.tab === "mensajes" ? vistaMensajes() : vistaFinDia();
+  }
+
+  function pintarDealers() {
+    $("#dl-dealers").innerHTML = S.dealers.map(d => `<option value="${esc(d.dealer)}"></option>`).join("");
+  }
+
+  // ---------------------------------------------------------------
+  // Paneles
+  // ---------------------------------------------------------------
+  function abrir(id) {
+    document.querySelectorAll(".panel").forEach(p => { p.classList.remove("open"); p.setAttribute("aria-hidden", "true"); });
+    const p = $(id); p.classList.add("open"); p.setAttribute("aria-hidden", "false");
+    $("#scrim").classList.add("open");
+    const f = p.querySelector("input, textarea, select"); if (f) setTimeout(() => f.focus(), 60);
+  }
+  function cerrar() {
+    document.querySelectorAll(".panel").forEach(p => { p.classList.remove("open"); p.setAttribute("aria-hidden", "true"); });
+    $("#scrim").classList.remove("open");
+  }
+
+  function abrirNueva() {
+    $("#i-dealer").value = ""; $("#i-resumen").value = "";
+    $("#i-pend-dealer").value = ""; $("#i-pend-mio").value = ""; $("#i-limite").value = "";
+    $("#i-segmento").value = "Enablement";
+    document.querySelectorAll("#i-features input").forEach(c => c.checked = false);
+    segmentoUI();
+    abrir("#panel-int");
+  }
+  function segmentoUI() {
+    const s = $("#i-segmento").value;
+    $("#w-tipologia").hidden = s !== "Ticket";
+    $("#w-features").hidden = s !== "Enablement";
+  }
+
+  // ---------------------------------------------------------------
+  // Acciones
+  // ---------------------------------------------------------------
+  async function guardarInteraccion() {
+    const dealer = $("#i-dealer").value.trim();
+    const resumen = $("#i-resumen").value.trim();
+    if (!dealer) return toast("Falta el dealer");
+    if (!resumen) return toast("Escribe un resumen");
+
+    const segmento = $("#i-segmento").value;
+    const tipo = $("#i-tipo").value;
+    const pd = lineas($("#i-pend-dealer").value), pm = lineas($("#i-pend-mio").value);
+    const limite = $("#i-limite").value;
+    const feats = [...document.querySelectorAll("#i-features input:checked")].map(c => c.value);
+    const btn = $("#i-save"); btn.disabled = true; btn.textContent = "Guardando…";
+
+    try {
+      await crearFila(dsId(DS.interacciones), {
+        Dealer: dealer, "date:Fecha:start": hoyISO(), Tipo: tipo, Segmento: segmento,
+        Features: feats, Resumen: resumen,
+        "Pendiente dealer": pd.join("\n"), "Pendiente mio": pm.join("\n"),
+        "Estado Notion": segmento === "Enablement" ? "Pendiente" : "No aplica"
+      });
+
+      for (const [quien, items] of [["Dealer", pd], ["Yo", pm]]) {
+        for (const d of items) {
+          const props = { Descripcion: d, Dealer: dealer, Quien: quien, Segmento: segmento, Estado: "Pendiente" };
+          if (limite) props["date:Fecha limite:start"] = limite;
+          await crearFila(dsId(DS.tareas), props);
+        }
+      }
+
+      if (segmento === "Enablement" && pd.length) {
+        await crearMensaje("Dealer (email)", dealer, T.followUp(pd));
+      } else if (segmento === "Ticket") {
+        const tip = $("#i-tipologia").value || "Otro";
+        const canal = CANAL_POR_TIPOLOGIA[tip] || "ES-TICKETS";
+        await crearTicketFila(dealer, tipo, tip, resumen, canal);
+        await crearMensaje(canal, dealer, T.ticket(dealer, tip, resumen, tipo));
+      } else if (segmento === "Website") {
+        await crearTicketFila(dealer, tipo, "Website", resumen, "dealer-website-creation");
+        await crearMensaje("dealer-website-creation", dealer, T.website(dealer, pd.length ? pd : [resumen]));
+      } else if (segmento === "Compliance") {
+        await crearTicketFila(dealer, tipo, "Compliance", resumen, "compliance-ops");
+        await crearMensaje("compliance-ops", dealer, T.compliance(dealer, resumen));
+      }
+
+      cerrar();
+      toast(segmento === "Enablement" ? "Guardado. Al final del día lo vuelcas a Notion." : "Guardado. Tienes un mensaje por revisar.");
+      await recargar();
+    } catch (e) {
+      const x = explica(e);
+      toast(`${x.t}. ${x.d}`);
+    } finally {
+      btn.disabled = false; btn.textContent = "Guardar";
+    }
+  }
+
+  async function crearTicketFila(dealer, origen, tipologia, desc, canal) {
+    return crearFila(dsId(DS.tickets), {
+      Descripcion: desc, Dealer: dealer, "date:Fecha:start": hoyISO(),
+      Origen: ["HubSpot-WhatsApp","Slack","Email","Llamada","Plaid"].includes(origen) ? origen : "Llamada",
+      Tipologia: tipologia, Estado: "Abierto", Canal: canal
+    });
+  }
+  async function crearMensaje(destino, rel, texto, threadTs) {
+    const props = {
+      Texto: texto, "date:Fecha:start": hoyISO(), Destino: destino,
+      Relacionado: rel, Estado: "Borrador", "Canal ID": canalId(destino) || ""
+    };
+    if (threadTs) props["Thread ts"] = threadTs;
+    return crearFila(dsId(DS.mensajes), props);
+  }
+
+  async function guardarTicket() {
+    const dealer = $("#t-dealer").value.trim(), desc = $("#t-desc").value.trim();
+    if (!dealer) return toast("Falta el dealer");
+    if (!desc) return toast("Describe el problema");
+    const tip = $("#t-tipologia").value, origen = $("#t-origen").value;
+    const canal = CANAL_POR_TIPOLOGIA[tip] || "ES-TICKETS";
+    const btn = $("#t-save"); btn.disabled = true; btn.textContent = "Creando…";
+    try {
+      await crearTicketFila(dealer, origen, tip, desc, canal);
+      if ($("#t-post").checked) await crearMensaje(canal, dealer, T.ticket(dealer, tip, desc, origen));
+      cerrar(); toast("Ticket creado"); await recargar();
+    } catch (e) { const x = explica(e); toast(`${x.t}. ${x.d}`); }
+    finally { btn.disabled = false; btn.textContent = "Crear ticket"; }
+  }
+
+  function abrirMensaje(id) {
+    const m = S.mensajes.find(x => pageId(x.url) === id);
+    if (!m) return;
+    S.msgSel = m;
+    const enviado = m.estado === "Enviado";
+    const esSlack = m.destino !== "Dealer (email)";
+    const cid = m.canal || canalId(m.destino);
+    $("#m-title").textContent = enviado ? "Mensaje enviado" : "Revisar mensaje";
+    $("#m-meta").textContent = `${m.destino} · ${m.rel || ""}${m.ts ? " · en el thread" : ""}`;
+    $("#m-texto").value = m.texto || "";
+    $("#m-texto").readOnly = enviado;
+    $("#m-send").hidden = enviado || !esSlack;
+    $("#m-sent").hidden = enviado;
+    $("#m-send").disabled = false; $("#m-send").textContent = "Enviar a Slack";
+    let warn = "";
+    if (!esSlack) warn = "Este va al dealer por email: cópialo y envíalo desde tu correo, luego márcalo como enviado.";
+    else if (!cid) warn = `Falta el ID del canal ${m.destino}. Añádelo en Ajustes o copia el texto y pégalo en Slack.`;
+    $("#m-warn").textContent = warn;
+    if (esSlack && !cid) $("#m-send").hidden = true;
+    abrir("#panel-msg");
+  }
+
+  async function enviarMensaje() {
+    const m = S.msgSel; if (!m) return;
+    const texto = $("#m-texto").value.trim();
+    if (!texto) return toast("El mensaje está vacío");
+    const cid = m.canal || canalId(m.destino);
+    if (!cid) return toast("Falta el ID del canal. Añádelo en Ajustes.");
+    const btn = $("#m-send"); btn.disabled = true; btn.textContent = "Enviando…";
+    try {
+      const r = await enviarSlack(cid, texto, m.ts || "");
+      S.conn.Slack = "ok";
+      await actualizarFila(pageId(m.url), {
+        Texto: texto, Estado: "Enviado", "Canal ID": r.canal,
+        "Thread ts": m.ts || r.ts, Enviado: `Slack · ${ddmm()}`
+      });
+      // Si el mensaje abre el hilo de un ticket, guardamos su ts para responder dentro
+      if (!m.ts && m.rel) {
+        const tic = S.tickets.find(t => t.dealer === m.rel && !t.ts && t.canal === m.destino);
+        if (tic) await actualizarFila(pageId(tic.url), { "Slack ts": r.ts, Estado: "En curso" });
+      }
+      cerrar(); toast("Enviado a Slack"); await recargar();
+    } catch (e) {
+      const x = explica(e);
+      if (["needs_reauth","server_not_connected","selection_required"].includes(e && e.code)) S.conn.Slack = "bad";
+      toast(`${x.t}. ${x.d}`);
+      btn.disabled = false; btn.textContent = "Enviar a Slack";
+      render();
+    }
+  }
+
+  async function marcarEnviado() {
+    const m = S.msgSel; if (!m) return;
+    try {
+      await actualizarFila(pageId(m.url), { Texto: $("#m-texto").value.trim(), Estado: "Enviado", Enviado: `Manual · ${ddmm()}` });
+      cerrar(); toast("Marcado como enviado"); await recargar();
+    } catch (e) { const x = explica(e); toast(`${x.t}. ${x.d}`); }
+  }
+
+  function abrirResponder(id) {
+    const t = S.tickets.find(x => pageId(x.url) === id); if (!t) return;
+    S.ticSel = t;
+    $("#r-meta").textContent = `${t.dealer} · ${t.tipologia} · #${t.canal}${t.ts ? " · responde en el thread" : ""}`;
+    $("#r-texto").value = `Update on *${t.dealer}*: `;
+    abrir("#panel-resp");
+  }
+  async function guardarRespuesta() {
+    const t = S.ticSel; if (!t) return;
+    const texto = $("#r-texto").value.trim();
+    if (!texto) return toast("Escribe la respuesta");
+    const btn = $("#r-save"); btn.disabled = true;
+    try {
+      await crearMensaje(t.canal, t.dealer, texto, t.ts || "");
+      await actualizarFila(pageId(t.url), { Estado: "En curso" });
+      cerrar(); toast("Guardado en Mensajes para que lo revises"); await recargar();
+    } catch (e) { const x = explica(e); toast(`${x.t}. ${x.d}`); }
+    finally { btn.disabled = false; }
+  }
+
+  async function cambiarEstadoTicket(id, v) {
+    try { await actualizarFila(id, { Estado: v }); toast(`Ticket: ${v.toLowerCase()}`); await recargar(); }
+    catch (e) { const x = explica(e); toast(`${x.t}. ${x.d}`); }
+  }
+  async function tareaHecha(id) {
+    try { await actualizarFila(id, { Estado: "Hecho" }); toast("Tarea completada"); await recargar(); }
+    catch (e) { const x = explica(e); toast(`${x.t}. ${x.d}`); }
+  }
+
+  // ---- Fin de día: escribe en TODAS las filas de capability del dealer ----
+  function updatesEditados() {
+    return (S.finDia || []).map((u, i) => {
+      const el = document.getElementById(`fd-${i}`);
+      return { ...u, comentario: el ? el.value.trim() : u.comentario };
+    }).filter(u => u.comentario);
+  }
+
+  async function sincronizarNotion() {
+    const ups = updatesEditados();
+    if (!ups.length) return toast("No hay nada que escribir");
+    const btn = document.querySelector('[data-act="fd-sync"]');
+    if (btn) { btn.disabled = true; btn.textContent = "Escribiendo…"; }
+    const fecha = ddmm();
+    let filas = 0, hechos = 0; const fallos = [];
+
+    for (const u of ups) {
+      try {
+        let rows = await sql(DS.tracker,
+          `SELECT url, Capability AS cap, "Latest Update" AS prev FROM "${DS.tracker}" WHERE Dealer = ?`, [u.dealer]);
+        if (!rows.length) {
+          rows = await sql(DS.tracker,
+            `SELECT url, Capability AS cap, "Latest Update" AS prev FROM "${DS.tracker}" WHERE Dealer LIKE ?`, [`%${u.dealer}%`]);
+        }
+        if (!rows.length) { fallos.push(`${u.dealer}: no aparece en el tracker`); continue; }
+
+        for (const r of rows) {
+          const previo = r.prev ? String(r.prev) : "";
+          const nuevo = `${fecha}: ${u.comentario}` + (previo ? `\n\n${previo}` : "");
+          await actualizarFila(pageId(r.url), { "Latest Update": nuevo });
+          filas++;
+        }
+        for (const id of u.ids) await actualizarFila(pageId(id), { "Estado Notion": "Sincronizado" });
+        hechos++;
+      } catch (e) {
+        const x = explica(e);
+        fallos.push(`${u.dealer}: ${x.t}`);
+      }
+    }
+
+    if (btn) { btn.disabled = false; btn.textContent = "Escribir en Notion"; }
+    toast(fallos.length
+      ? `${hechos} dealer(s) actualizados en ${filas} filas. Sin escribir: ${fallos.join(" · ")}`
+      : `Listo: ${hechos} dealer(s) actualizados en ${filas} filas del tracker.`);
+    await recargar();
+  }
+
+  function copiarFinDia() {
+    const txt = updatesEditados().map(u => `${u.dealer}\n${ddmm()}: ${u.comentario}`).join("\n\n———\n\n");
+    copiar(txt);
+  }
+  function copiar(texto) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(() => toast("Copiado"), () => fallback(texto));
+    } else fallback(texto);
+    function fallback(t) {
+      const ta = document.createElement("textarea");
+      ta.value = t; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); toast("Copiado"); } catch { toast("No se ha podido copiar"); }
+      document.body.removeChild(ta);
+    }
+  }
+
+  // ---------------------------------------------------------------
+  // Ajustes (localStorage)
+  // ---------------------------------------------------------------
+  function cargarCfg() {
+    try {
+      const raw = localStorage.getItem("csmhub.cfg");
+      if (raw) S.cfg = { ...CFG_DEFAULT, ...JSON.parse(raw) };
+    } catch (_) {}
+  }
+  function abrirCfg() {
+    $("#c-tickets").value = S.cfg.canalTickets;
+    $("#c-web").value = S.cfg.canalWeb;
+    $("#c-comp").value = S.cfg.canalCompliance;
+    $("#c-webowner").value = S.cfg.webOwner;
+    $("#c-firma").value = S.cfg.firma;
+    abrir("#panel-cfg");
+  }
+  function guardarCfg() {
+    S.cfg = {
+      canalTickets: $("#c-tickets").value.trim(),
+      canalWeb: $("#c-web").value.trim(),
+      canalCompliance: $("#c-comp").value.trim(),
+      webOwner: $("#c-webowner").value.trim(),
+      firma: $("#c-firma").value
+    };
+    try { localStorage.setItem("csmhub.cfg", JSON.stringify(S.cfg)); } catch (_) {}
+    cerrar(); toast("Ajustes guardados"); render();
+  }
+
+  // ---------------------------------------------------------------
+  // Eventos
+  // ---------------------------------------------------------------
+  document.addEventListener("click", async (ev) => {
+    const el = ev.target.closest("[data-act], [data-close]");
+    if (!el) return;
+    if (el.hasAttribute("data-close")) return cerrar();
+    const act = el.dataset.act, id = el.dataset.id, v = el.dataset.v;
+    if (act === "tab") { S.tab = v; S.chip = ""; render(); }
+    else if (act === "chip") { S.chip = S.chip === v ? "" : v; render(); }
+    else if (act === "ver-msg") abrirMensaje(id);
+    else if (act === "responder") abrirResponder(id);
+    else if (act === "tic-estado") cambiarEstadoTicket(id, v);
+    else if (act === "tarea-hecha") tareaHecha(id);
+    else if (act === "fd-sync") sincronizarNotion();
+    else if (act === "fd-copy") copiarFinDia();
+    else if (act === "reintentar") recargar();
+  });
+
+  $("#scrim").addEventListener("click", cerrar);
+  document.addEventListener("keydown", e => { if (e.key === "Escape") cerrar(); });
+  $("#q").addEventListener("input", e => { S.q = e.target.value; render(); });
+  $("#btn-refresh").addEventListener("click", recargar);
+  $("#btn-new").addEventListener("click", abrirNueva);
+  $("#btn-cfg").addEventListener("click", abrirCfg);
+  $("#i-segmento").addEventListener("change", segmentoUI);
+  $("#i-save").addEventListener("click", guardarInteraccion);
+  $("#t-save").addEventListener("click", guardarTicket);
+  $("#m-send").addEventListener("click", enviarMensaje);
+  $("#m-sent").addEventListener("click", marcarEnviado);
+  $("#m-copy").addEventListener("click", () => copiar($("#m-texto").value));
+  $("#r-save").addEventListener("click", guardarRespuesta);
+  $("#c-save").addEventListener("click", guardarCfg);
+
+  // ---------------------------------------------------------------
+  // Arranque
+  // ---------------------------------------------------------------
+  function pintarOpciones() {
+    $("#i-features").innerHTML = FEATURES.map(f =>
+      `<label><input type="checkbox" value="${esc(f)}">${esc(f)}</label>`).join("");
+    const ops = TIPOLOGIAS.map(t => `<option>${esc(t)}</option>`).join("");
+    $("#i-tipologia").innerHTML = ops;
+    $("#t-tipologia").innerHTML = ops;
+  }
+
+  async function init() {
+    cargarCfg();
+    pintarOpciones();
+    segmentoUI();
+    render();
+
+    const mcp = (window.claude && typeof window.claude.use === "function")
+      ? await window.claude.use("mcp") : null;
+
+    if (!mcp) {
+      S.ready = true; S.loading = false;
+      $("#global-notice").innerHTML = noticeHTML({ code: "not_granted" });
+      S.conn.Notion = "bad"; S.conn.Slack = "bad";
+      render();
+      return;
+    }
+    S.mcp = mcp; S.ready = true;
+
+    try {
+      const { servers } = await mcp.listTools();
+      const nombres = new Set((servers || []).map(s => s.server));
+      S.conn.Notion = nombres.has(NOTION) ? "ok" : "bad";
+      S.conn.Slack = nombres.has(SLACK) ? "ok" : "bad";
+      const faltan = [NOTION, SLACK].filter(n => !nombres.has(n));
+      if (faltan.length) {
+        $("#global-notice").innerHTML = noticeHTML({ code: "server_not_connected", server: faltan.join(" y ") });
+      }
+    } catch (_) { /* seguimos: los errores reales llegan en las llamadas */ }
+
+    await cargarTodo();
+  }
+
+  init();
+})();
+</script>

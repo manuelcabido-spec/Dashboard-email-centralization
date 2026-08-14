@@ -1,10 +1,25 @@
-# 📋 Dealer CSM Hub (antes: Dealer Document Tracker)
+# Herramientas de CSM
 
-Herramienta para centralizar el día a día de un CSM: la recepción de documentación de más de
-100 dealers (contratos de seguro, certificados, etc.), y — desde la v5 — **las llamadas y
-conversaciones con clientes segmentadas** (Enablement, Tickets de soporte, cambios de Website,
-Compliance), con mensajes en inglés generados automáticamente, envío a Slack tras tu revisión
-y el update de fin de día del **Summer Enablement Tracker de Notion** compuesto solo.
+Este repositorio contiene dos herramientas independientes:
+
+| | Qué es | Dónde vive |
+|---|---|---|
+| **🧭 [CSM Hub](dashboard/)** | Llamadas y conversaciones segmentadas (enablement, tickets, website, compliance), mensajes de Slack con revisión y el update diario del Summer Enablement Tracker. | Dashboard publicado en claude.ai, usa tus conectores de Notion y Slack |
+| **📋 Dealer Document Tracker** | Recepción de documentación de más de 100 dealers: escanea Gmail, clasifica adjuntos, los guarda en Drive y hace seguimiento. | Google Apps Script + Google Sheet |
+
+👉 **Para el día a día de llamadas y tickets: [`dashboard/README.md`](dashboard/README.md).**
+El resto de este documento cubre el Document Tracker de Apps Script.
+
+> ℹ️ El módulo CSM que hay dentro de `apps-script/` (interacciones, tickets, mensajes, Notion)
+> quedó **obsoleto** al mover ese flujo al CSM Hub. Se conserva por historial, pero no hace
+> falta usarlo: el escaneo de documentos de Apps Script funciona igual sin tocarlo.
+
+---
+
+# 📋 Dealer Document Tracker
+
+Herramienta para centralizar el día a día de la documentación: la recepción de documentos de más
+de 100 dealers (contratos de seguro, certificados, etc.).
 
 Está organizada por **campañas**: cada casuística nueva (p. ej. *"Contratos de seguro - Jul 2026"*)
 es una campaña que creas en 1 minuto desde el dashboard, eligiendo qué documento pides y a qué
