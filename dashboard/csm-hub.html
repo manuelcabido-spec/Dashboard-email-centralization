@@ -271,6 +271,7 @@
     <div class="conn">
       <span class="pill" id="pill-notion"><span class="led"></span>Notion</span>
       <span class="pill" id="pill-slack"><span class="led"></span>Slack</span>
+      <span class="pill" id="pill-claap"><span class="led"></span>Claap</span>
     </div>
     <button class="ghost" id="btn-cfg" title="Ajustes">Ajustes</button>
     <button id="btn-refresh">Actualizar</button>
@@ -419,6 +420,23 @@
   </div>
 </aside>
 
+<!-- Panel: resumen de una grabación de Claap -->
+<aside class="panel" id="panel-grab" aria-hidden="true" aria-label="Resumen de la grabación">
+  <div class="panel-h">
+    <h2 id="g-title">Grabación</h2>
+    <span class="grow"></span>
+    <button class="ghost" data-close>Cerrar</button>
+  </div>
+  <div class="panel-b">
+    <div class="hintline" id="g-meta"></div>
+    <div id="g-body"></div>
+  </div>
+  <div class="panel-f">
+    <a class="btn" id="g-link" target="_blank" rel="noopener">Abrir en Claap</a>
+    <button class="primary" id="g-registrar">Registrar interacción</button>
+  </div>
+</aside>
+
 <!-- Panel: ajustes -->
 <aside class="panel" id="panel-cfg" aria-hidden="true" aria-label="Ajustes">
   <div class="panel-h">
@@ -449,6 +467,20 @@
     <label class="fld">Firma de los follow-ups por email
       <input id="c-firma" autocomplete="off">
     </label>
+    <div class="notice">
+      <div>
+        <div class="t">Claap</div>
+        <div class="d">De aquí salen las grabaciones de tus reuniones y llamadas.</div>
+      </div>
+    </div>
+    <div class="row2">
+      <label class="fld">Workspace de Claap
+        <input id="c-claapws" autocomplete="off">
+      </label>
+      <label class="fld">Tu email en Claap
+        <input id="c-claapmail" autocomplete="off">
+      </label>
+    </div>
   </div>
   <div class="panel-f">
     <button data-close>Cancelar</button>
@@ -466,6 +498,10 @@
   // Constantes: data sources de Notion y canales de Slack ya resueltos
   // ---------------------------------------------------------------
   const NOTION = "Notion", SLACK = "Slack";
+  // El conector de Claap puede llamarse "Claap" o "Claap MCP" según cómo esté
+  // añadido en claude.ai; declaramos ambos y resolvemos el real en listTools().
+  const CLAAP_CANDIDATOS = ["Claap", "Claap MCP"];
+  let CLAAP = "Claap";
   const DS = {
     interacciones: "collection://22853e2b-64b8-4775-9acf-531d840e0ccf",
     tareas:        "collection://077b1faa-0515-428a-a5c6-738c235226bc",
@@ -478,7 +514,9 @@
     canalWeb: "C0A7HDHAA9L",
     canalCompliance: "C06TEST9SFM",
     webOwner: "U0ACB8YKPNV",
-    firma: "Best,\nManuel"
+    firma: "Best,\nManuel",
+    claapWorkspace: "PzY2TjQGaI",
+    claapEmail: "manuel.cabido@infinit.com"
   };
   const TIPOLOGIAS = ["Bugs DMS","Bugs Non-DMS","Payments","Billing","Backoffice","Compliance",
                       "Line Increases","KYS","Exceptions","Website","Otro"];
@@ -494,7 +532,8 @@
   // ---------------------------------------------------------------
   const S = {
     mcp: null, ready: false,
-    conn: { Notion: "…", Slack: "…" },
+    conn: { Notion: "…", Slack: "…", Claap: "…" },
+    grabaciones: [], grabSel: null, grabResumen: null, grabCargando: false,
     cfg: { ...CFG_DEFAULT },
     tab: "hoy",
     q: "", chip: "",
@@ -656,7 +695,8 @@
       cargarSlice("interacciones", DS.interacciones, Q.interacciones),
       cargarSlice("tareas", DS.tareas, Q.tareas),
       cargarSlice("tickets", DS.tickets, Q.tickets),
-      cargarSlice("mensajes", DS.mensajes, Q.mensajes)
+      cargarSlice("mensajes", DS.mensajes, Q.mensajes),
+      cargarGrabaciones()
     ]);
     S.finDia = componerFinDia();
     S.loading = false;
@@ -698,11 +738,12 @@
   // Vistas
   // ---------------------------------------------------------------
   const TABS = [
-    { k: "hoy",        t: "Hoy" },
-    { k: "enablement", t: "Enablement" },
-    { k: "tickets",    t: "Tickets" },
-    { k: "mensajes",   t: "Mensajes" },
-    { k: "findia",     t: "Fin de día" }
+    { k: "hoy",         t: "Hoy" },
+    { k: "grabaciones", t: "Grabaciones" },
+    { k: "enablement",  t: "Enablement" },
+    { k: "tickets",     t: "Tickets" },
+    { k: "mensajes",    t: "Mensajes" },
+    { k: "findia",      t: "Fin de día" }
   ];
 
   function conteos() {
@@ -711,6 +752,7 @@
     const tarPend = S.tareas.filter(t => t.estado !== "Hecho");
     return {
       hoy: intHoy.length,
+      grabaciones: S.grabaciones.length,
       enablement: S.interacciones.filter(i => i.segmento === "Enablement").length,
       tickets: S.tickets.filter(t => t.estado !== "Resuelto").length,
       mensajes: S.mensajes.filter(m => m.estado !== "Enviado").length,
@@ -778,6 +820,137 @@
     const tar = filtra(c.tarPend, ["dealer","desc_","segmento"]);
     return seccion("Interacciones de hoy", "", tablaInteracciones(int), S.err.interacciones, "interacciones")
          + seccion("Tareas abiertas", "de todas las fechas", tablaTareas(tar), S.err.tareas, "tareas");
+  }
+
+  // ---- Grabaciones (Claap) ----
+  async function cargarGrabaciones() {
+    if (!S.mcp) return;
+    const d = new Date(); d.setDate(d.getDate() - 14);
+    const desde = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    try {
+      const r = await S.mcp.callTool(CLAAP, "get_recordings", {
+        workspaceId: S.cfg.claapWorkspace,
+        filters: { contactEmail: S.cfg.claapEmail, createdAt: { gte: desde } },
+        limit: 60,
+        sort: [{ field: "createdAt", order: "desc" }]
+      }, { cache: { staleTime: 60000 } });
+      const p = (r && r.payload) || {};
+      S.grabaciones = (p.recordings || []).map(g => ({
+        id: g.recordingId,
+        fecha: g.createdAt,
+        titulo: g.title,
+        url: g.url,
+        dealer: (g.companies && g.companies[0] && g.companies[0].name) || contraparte(g.title),
+        carpeta: (g.folder && g.folder.title) || ""
+      }));
+      delete S.err.grabaciones;
+      S.conn.Claap = "ok";
+    } catch (e) {
+      S.err.grabaciones = e;
+      if (["needs_reauth","server_not_connected","selection_required","not_granted",
+           "capability_disabled","server_not_found","not_in_manifest"].includes(e && e.code)) S.conn.Claap = "bad";
+    }
+  }
+
+  function contraparte(titulo) {
+    const t = String(titulo || "").replace(/\s+\d{2}\/\d{2}\/\d{4}$/, "").trim();
+    if (t.includes(" x ")) {
+      const partes = t.split(" x ");
+      return (partes[0].trim().startsWith("Manuel") ? partes[1] : partes[0]).trim();
+    }
+    return t;
+  }
+
+  function vistaGrabaciones() {
+    if (S.err.grabaciones) return seccion("Grabaciones de Claap", "", "", S.err.grabaciones, "grabaciones");
+    const rows = filtra(S.grabaciones, ["dealer","titulo","carpeta"]);
+    if (!rows.length) {
+      return seccion("Grabaciones de Claap", "últimos 14 días",
+        vacio("No hay grabaciones", "Comprueba en Ajustes el workspace y el email de Claap."), null);
+    }
+    const cuerpo = `<div class="scroll"><table><thead><tr>
+        <th>Fecha</th><th>Dealer</th><th>Grabación</th><th>Carpeta</th><th></th>
+      </tr></thead><tbody>${rows.map(g => `<tr>
+        <td class="mono">${esc(fmtFecha(g.fecha))}</td>
+        <td class="dealer">${esc(g.dealer || "—")}</td>
+        <td class="wrap">${esc(g.titulo)}</td>
+        <td class="who">${esc(g.carpeta || "—")}</td>
+        <td class="acts">
+          <button class="small" data-act="ver-grab" data-id="${esc(g.id)}">Ver resumen</button>
+        </td>
+      </tr>`).join("")}</tbody></table></div>`;
+    return seccion("Grabaciones de Claap", `últimos 14 días · ${rows.length}`, cuerpo, null);
+  }
+
+  async function verGrabacion(id) {
+    const g = S.grabaciones.find(x => x.id === id);
+    if (!g) return;
+    S.grabSel = g;
+    $("#g-title").textContent = g.dealer || g.titulo;
+    $("#g-meta").textContent = `${fmtFecha(g.fecha)} · ${g.titulo}`;
+    $("#g-link").href = g.url;
+    $("#g-body").innerHTML = `<div class="skel">Cargando el resumen de Claap…</div>`;
+    abrir("#panel-grab");
+    try {
+      const r = await S.mcp.callTool(CLAAP, "get_recording",
+        { workspaceId: S.cfg.claapWorkspace, recordingId: id }, { cache: { staleTime: 300000 } });
+      const p = (r && r.payload) || {};
+      const md = (p.summary && p.summary.markdown) || "";
+      if (!md) {
+        $("#g-body").innerHTML = `<div class="empty"><strong>Esta grabación no tiene resumen</strong>Ábrela en Claap para escucharla.</div>`;
+        return;
+      }
+      $("#g-body").innerHTML = renderResumen(md);
+    } catch (e) {
+      $("#g-body").innerHTML = noticeHTML(e);
+    }
+  }
+
+  /** Saca de un resumen de Claap la lista de compromisos. */
+  function accionesDe(md) {
+    const m = String(md).match(/##[^\n]*Action items\s*\n([\s\S]*?)(?=\n##|$)/i);
+    if (!m) return [];
+    return m[1].split("\n")
+      .map(l => l.replace(/^\s*[*-]\s*/, "").replace(/\*\*/g, "").trim())
+      .filter(l => l.length > 3);
+  }
+
+  function renderResumen(md) {
+    const acciones = accionesDe(md);
+    const limpio = String(md).replace(/%\[[\d:]+\]\(\)/g, "").replace(/\*\*/g, "").replace(/^##\s*/gm, "\n");
+    let h = "";
+    if (acciones.length) {
+      h += `<div><div class="hintline" style="margin-bottom:4px">Compromisos detectados</div>` +
+        acciones.map(a =>
+          `<label style="display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:13px">
+             <input type="checkbox" class="g-acc" value="${esc(a)}" checked style="width:auto;margin-top:3px">
+             <span>${esc(a)}</span></label>`).join("") +
+        `<div class="hintline">Desmarca los que ya estén cerrados; el resto pasan a tareas.</div></div>`;
+    } else {
+      h += `<div class="hintline">Claap no detectó compromisos en esta grabación.</div>`;
+    }
+    h += `<details><summary style="cursor:pointer;font-size:13px;color:var(--ink-2)">Resumen completo</summary>
+            <div class="msg-text" style="font-size:12.5px;color:var(--ink-2);margin-top:8px">${esc(limpio.trim())}</div>
+          </details>`;
+    return h;
+  }
+
+  /** Lleva la grabación al formulario de registro, ya rellenado. */
+  function registrarDesdeGrabacion() {
+    const g = S.grabSel;
+    if (!g) return;
+    const acc = [...document.querySelectorAll(".g-acc:checked")].map(c => c.value);
+    const mios = acc.filter(a => /^manuel\s+cabido/i.test(a));
+    const suyos = acc.filter(a => !mios.includes(a));
+    const limpia = s => s.replace(/^[^:]{0,40}:\s*/, "");
+    cerrar();
+    setTimeout(() => {
+      abrirNueva(g.dealer || "");
+      $("#i-tipo").value = g.titulo.includes(" x ") ? "Llamada" : "Reunión";
+      $("#i-resumen").value = `${g.titulo} · Claap: ${g.url}`;
+      $("#i-pend-dealer").value = suyos.map(limpia).join("\n");
+      $("#i-pend-mio").value = mios.map(limpia).join("\n");
+    }, 180);
   }
 
   function vistaEnablement() {
@@ -870,7 +1043,7 @@
     const c = conteos();
     $("#today").textContent = new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
 
-    for (const [srv, el] of [["Notion", $("#pill-notion")], ["Slack", $("#pill-slack")]]) {
+    for (const [srv, el] of [["Notion", $("#pill-notion")], ["Slack", $("#pill-slack")], ["Claap", $("#pill-claap")]]) {
       el.className = "pill" + (S.conn[srv] === "ok" ? " ok" : S.conn[srv] === "bad" ? " bad" : "");
       el.lastChild.textContent = srv;
     }
@@ -897,7 +1070,7 @@
       ? ["Abierto","En curso","Esperando dealer","Resuelto"].map(e =>
           `<button class="chip" aria-pressed="${S.chip === e}" data-act="chip" data-v="${esc(e)}">${esc(e)}</button>`).join("")
       : "";
-    $("#filters").style.display = ["hoy","enablement","tickets","mensajes"].includes(S.tab) ? "" : "none";
+    $("#filters").style.display = ["hoy","grabaciones","enablement","tickets","mensajes"].includes(S.tab) ? "" : "none";
 
     if (!S.ready) {
       $("#view").innerHTML = `<div class="card"><div class="skel">Conectando con Notion y Slack…</div></div>`;
@@ -909,6 +1082,7 @@
     }
     $("#view").innerHTML =
       S.tab === "hoy" ? vistaHoy() :
+      S.tab === "grabaciones" ? vistaGrabaciones() :
       S.tab === "enablement" ? vistaEnablement() :
       S.tab === "tickets" ? vistaTickets() :
       S.tab === "mensajes" ? vistaMensajes() : vistaFinDia();
@@ -932,8 +1106,9 @@
     $("#scrim").classList.remove("open");
   }
 
-  function abrirNueva() {
-    $("#i-dealer").value = ""; $("#i-resumen").value = "";
+  function abrirNueva(dealer) {
+    $("#i-dealer").value = typeof dealer === "string" ? dealer : "";
+    $("#i-resumen").value = "";
     $("#i-pend-dealer").value = ""; $("#i-pend-mio").value = ""; $("#i-limite").value = "";
     $("#i-segmento").value = "Enablement";
     document.querySelectorAll("#i-features input").forEach(c => c.checked = false);
@@ -1202,6 +1377,8 @@
     $("#c-comp").value = S.cfg.canalCompliance;
     $("#c-webowner").value = S.cfg.webOwner;
     $("#c-firma").value = S.cfg.firma;
+    $("#c-claapws").value = S.cfg.claapWorkspace;
+    $("#c-claapmail").value = S.cfg.claapEmail;
     abrir("#panel-cfg");
   }
   function guardarCfg() {
@@ -1210,10 +1387,12 @@
       canalWeb: $("#c-web").value.trim(),
       canalCompliance: $("#c-comp").value.trim(),
       webOwner: $("#c-webowner").value.trim(),
-      firma: $("#c-firma").value
+      firma: $("#c-firma").value,
+      claapWorkspace: $("#c-claapws").value.trim(),
+      claapEmail: $("#c-claapmail").value.trim()
     };
     try { localStorage.setItem("csmhub.cfg", JSON.stringify(S.cfg)); } catch (_) {}
-    cerrar(); toast("Ajustes guardados"); render();
+    cerrar(); toast("Ajustes guardados"); recargar();
   }
 
   // ---------------------------------------------------------------
@@ -1226,6 +1405,7 @@
     const act = el.dataset.act, id = el.dataset.id, v = el.dataset.v;
     if (act === "tab") { S.tab = v; S.chip = ""; render(); }
     else if (act === "chip") { S.chip = S.chip === v ? "" : v; render(); }
+    else if (act === "ver-grab") verGrabacion(id);
     else if (act === "ver-msg") abrirMensaje(id);
     else if (act === "responder") abrirResponder(id);
     else if (act === "tic-estado") cambiarEstadoTicket(id, v);
@@ -1249,6 +1429,7 @@
   $("#m-copy").addEventListener("click", () => copiar($("#m-texto").value));
   $("#r-save").addEventListener("click", guardarRespuesta);
   $("#c-save").addEventListener("click", guardarCfg);
+  $("#g-registrar").addEventListener("click", registrarDesdeGrabacion);
 
   // ---------------------------------------------------------------
   // Arranque
@@ -1281,10 +1462,15 @@
 
     try {
       const { servers } = await mcp.listTools();
-      const nombres = new Set((servers || []).map(s => s.server));
-      S.conn.Notion = nombres.has(NOTION) ? "ok" : "bad";
-      S.conn.Slack = nombres.has(SLACK) ? "ok" : "bad";
-      const faltan = [NOTION, SLACK].filter(n => !nombres.has(n));
+      const nombres = (servers || []).map(s => s.server);
+      const set = new Set(nombres);
+      S.conn.Notion = set.has(NOTION) ? "ok" : "bad";
+      S.conn.Slack = set.has(SLACK) ? "ok" : "bad";
+      // Claap puede estar dado de alta con varios nombres: usamos el que exista
+      const claap = CLAAP_CANDIDATOS.find(c => set.has(c))
+                 || nombres.find(n => /claap/i.test(n));
+      if (claap) { CLAAP = claap; S.conn.Claap = "ok"; } else { S.conn.Claap = "bad"; }
+      const faltan = [NOTION, SLACK].filter(n => !set.has(n));
       if (faltan.length) {
         $("#global-notice").innerHTML = noticeHTML({ code: "server_not_connected", server: faltan.join(" y ") });
       }

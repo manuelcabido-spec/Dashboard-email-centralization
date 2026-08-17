@@ -11,10 +11,21 @@ Slack, updates del tracker) pasa antes por tu revisión.
 | Pestaña | Para qué |
 |---|---|
 | **Hoy** | Interacciones registradas hoy y todas las tareas abiertas (lo que te deben los dealers y lo que debes tú). |
+| **Grabaciones** | Tus reuniones y llamadas de Claap de los últimos 14 días: abre el resumen de IA, marca los compromisos que siguen abiertos y los pasa al registro ya rellenados. |
 | **Enablement** | Historial de llamadas de enablement y sus pendientes, con el estado del volcado a Notion. |
 | **Tickets** | Product support por tipología y estado, cada uno con su canal de Slack. |
 | **Mensajes** | Bandeja de revisión: los mensajes se redactan solos en inglés y esperan tu OK. |
 | **Fin de día** | Compone el update del Summer Enablement Tracker y lo escribe en Notion. |
+
+### Claap
+
+La pestaña **Grabaciones** lista tus grabaciones (reuniones y llamadas de teléfono) filtradas por
+tu email. Al pulsar **Ver resumen** trae el resumen de IA de Claap y extrae los *action items*
+como una lista de casillas: desmarcas los que ya estén cerrados y **Registrar interacción** abre
+el formulario con el dealer, el enlace a la grabación y los pendientes repartidos entre «el
+dealer me tiene que pasar» y «yo tengo que».
+
+El workspace y tu email de Claap se cambian en **Ajustes**.
 
 ### El flujo
 
@@ -72,6 +83,27 @@ Sin el ID de un canal el dashboard sigue funcionando: te deja copiar el mensaje 
 El fuente es este `csm-hub.html`. Para cambiarlo: edítalo y pide a Claude que lo republique con
 la misma URL. Cualquier cambio de estructura (nuevas pestañas, campos o automatismos) es una
 edición de este único archivo.
+
+## Histórico importado (3–17 de agosto de 2026)
+
+Al montar el hub se cargaron desde Claap las **57 grabaciones** de las dos semanas anteriores
+como interacciones (con su fecha, dealer y enlace a Claap), marcadas como *Sincronizado* para
+que no vuelvan a volcarse al tracker.
+
+De los resúmenes de las reuniones con dealer identificado salieron **17 tareas abiertas** y
+**2 tickets**. Lo que estaba vivo a 17/08:
+
+| Dealer | Pendiente | Quién |
+|---|---|---|
+| PRODIGIOUS CARS | Renovación vence el **20/08** con el precio sin cerrar (13.700 vs 13.200; el año pasado ~10-11k). Hablar con Jorge y que llame al cliente | Yo |
+| AUTOMAN GARAGE | 5 documentos para activar la línea (suministro, póliza corregida, certificado, domicilio de administradores, email a Coches.net) | Dealer |
+| CARPENTUM (Renting Credit) | Follow-up del 19/08 e integración con Carve + campos obligatorios del contrato | Yo |
+| AUTOMOCION BARBANZA | Error de documentación X6 / Macan GTS que bloquea un pago de Openline | Yo (ticket) |
+| AUTOMOVILES QUINTANA | Intereses no domiciliados este mes | Yo (ticket) |
+| TU COCHE IDEAL | Comisión financiera como ingreso (Product) + demo del 01/09 | Yo |
+| EDITION CARS | Email con la info de la web y reagendar la reunión | Yo |
+| AUTOVETTURA 2012 | Enviar por email los cambios de la web | Dealer |
+| ROMAN CABANILLAS | Modelo 100 cuando responda su gestor | Dealer |
 
 ## Pendiente / siguiente iteración
 
