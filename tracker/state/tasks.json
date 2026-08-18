@@ -73,13 +73,13 @@
   "company": "Auto Show Alicante",
   "date": "2026-08-10",
   "due_hint": "Coches.net ya asoció el número para 2FA; queda el reenvío de leads y la duda de fotos",
-  "status": "pendiente",
-  "status_evidence": "Último movimiento del hilo es de Gustavo (10/08); Manuel no ha respondido",
+  "status": "gestionado",
+  "status_evidence": "Resuelto en la llamada del 17/08: la cuenta de leads era otra (Tu Coche de Confianza Alicante SL); Manuel la vinculó y el requisito quedó completado en el panel",
   "owner": "manuel",
   "priority": "alta",
   "id": "af5997aa35",
   "created_at": "2026-08-10",
-  "last_seen_activity": "2026-08-10"
+  "last_seen_activity": "2026-08-17"
  },
  {
   "title": "Trasladar al equipo web los cambios de la página de Kairos Motor",
@@ -186,13 +186,13 @@
   "company": "Auto Draft SL",
   "date": "2026-08-11",
   "due_hint": "Proponer martes 18 o miércoles 19 por la mañana y enviar invitación",
-  "status": "pendiente",
-  "status_evidence": "Elena confirmó disponibilidad ('cuando te venga bien'); en la Spain Enablement del 11/08 Manuel citó esta reunión para fijar el timeline de migración y empujar multiposting",
+  "status": "gestionado",
+  "status_evidence": "Reunión 'Update Estado Bracar' agendada para el martes 18/08 a las 11:00; Elena y Diogo aceptaron",
   "owner": "manuel",
   "priority": "alta",
   "id": "d09bf2b2fe",
   "created_at": "2026-08-11",
-  "last_seen_activity": "2026-08-11"
+  "last_seen_activity": "2026-08-17"
  },
  {
   "title": "Conseguir con David la ficha técnica extranjera del BMW X6 y enviarla a Cristian por WhatsApp",
@@ -222,13 +222,13 @@
   "company": "AUTOMOCION BARBANZA SL",
   "date": "2026-08-12",
   "due_hint": "hoy",
-  "status": "pendiente",
-  "status_evidence": null,
+  "status": "gestionado",
+  "status_evidence": "Reembolsado; en la llamada del 17/08 Manuel gestionó además la refinanciación del segundo Macan (bastidor …942) para que aparezca en el listado",
   "owner": "manuel",
   "priority": "alta",
   "id": "3d8cd549ef",
   "created_at": "2026-08-12",
-  "last_seen_activity": "2026-08-12"
+  "last_seen_activity": "2026-08-17"
  },
  {
   "title": "Verificar con el equipo de pagos el cobro de intereses a Jose Aguilar (Quintana)",
@@ -372,12 +372,12 @@
   "date": "2026-08-04",
   "due_hint": null,
   "status": "pendiente",
-  "status_evidence": "Bloquea el alta del asistente de voz (bundle regulatorio de Twilio); hay mismatch entre dirección y documentos",
+  "status_evidence": "17/08: Antonia está investigando por qué el bundle regulatorio fue rechazado y dará novedades",
   "owner": "manuel",
   "priority": "media",
   "id": "2d9121ba64",
   "created_at": "2026-08-04",
-  "last_seen_activity": "2026-08-04"
+  "last_seen_activity": "2026-08-17"
  },
  {
   "title": "Conseguir el proof of address de Factoría Automóviles Arias para el bundle de Twilio",
@@ -535,13 +535,13 @@
   "company": "Auto Show",
   "date": "2026-08-07",
   "due_hint": null,
-  "status": "pendiente",
-  "status_evidence": "Bloqueado hasta que se asigne el número de telefonía solicitado en la plataforma; el dealer avisará por WhatsApp",
+  "status": "en_gestion",
+  "status_evidence": "17/08: acordado el flujo (llamadas primero a Gustavo, si no coge → asistente IA; usará un número dedicado); Manuel pregunta al responsable por la solicitud del número (pedida hace ~10 días)",
   "owner": "manuel",
   "priority": "media",
   "id": "0273ded71c",
   "created_at": "2026-08-07",
-  "last_seen_activity": "2026-08-07"
+  "last_seen_activity": "2026-08-17"
  },
  {
   "title": "Perseguir a Auto Show: subida de la documentación para activar la financiación al cliente",
@@ -554,12 +554,12 @@
   "date": "2026-08-07",
   "due_hint": null,
   "status": "pendiente",
-  "status_evidence": "El dealer ya seleccionó los bancos (12 solicitudes) pero dejó pendiente subir tarifas y documentos",
+  "status_evidence": "17/08: Cofidis pidió documentación adicional (probablemente el modelo 200); Gustavo la envía esta semana",
   "owner": "esperando",
   "priority": "baja",
   "id": "06b477ce1e",
   "created_at": "2026-08-07",
-  "last_seen_activity": "2026-08-07"
+  "last_seen_activity": "2026-08-17"
  },
  {
   "title": "Perseguir la documentación del Audi SQ7 de Quintana para la financiación de stock",
@@ -1151,10 +1151,10 @@
   "date": "2026-08-12",
   "due_hint": "hoy",
   "status": "en_gestion",
-  "status_evidence": "Jorge lo pidió por Slack el 12/08; Manuel llamó a Cristian y a David y aclaró los motivos del bloqueo (ficha técnica X6, reembolso Macan y auditorías); falta cerrarlos",
+  "status_evidence": "17/08: Macan reembolsado y refinanciación del segundo gestionada en la llamada; queda la ficha técnica del X6",
   "owner": "manuel",
   "priority": "alta",
-  "last_seen_activity": "2026-08-12",
+  "last_seen_activity": "2026-08-17",
   "id": "b6f06be6b1",
   "created_at": "2026-08-12"
  },
@@ -1269,10 +1269,10 @@
   "date": "2026-08-03",
   "due_hint": null,
   "status": "en_gestion",
-  "status_evidence": "Llamadas con Daniel el 10 y 11/08; Winifer cerró el ticket y el dealer quedó en enviar un vídeo",
+  "status_evidence": "17/08: Daniel reenvió el email 2FA correctamente a cliente@coches.net durante la llamada (antes iba a 'clientes@'); Andrés confirma que la autorización aún no está",
   "owner": "manuel",
   "priority": "media",
-  "last_seen_activity": "2026-08-11",
+  "last_seen_activity": "2026-08-17",
   "id": "13a668422a",
   "created_at": "2026-08-03"
  },
@@ -1431,12 +1431,12 @@
   "date": "2026-08-07",
   "due_hint": "esta semana",
   "status": "en_gestion",
-  "status_evidence": "El dealer facilitó las credenciales de Coches.net en la call y ya reenvió el email 2FA a Coches.net; falta que Coches.net añada el número de INFINIT",
+  "status_evidence": "17/08: Gustavo confirmó interés; credenciales ya entregadas y cuenta de proveedor reconectada (el fallo era una credencial mal introducida, ya corregida por el dealer); activar publicación en coches.net y milanuncios",
   "owner": "manuel",
   "priority": "media",
   "id": "c87ba1f1dc",
   "created_at": "2026-08-07",
-  "last_seen_activity": "2026-08-07"
+  "last_seen_activity": "2026-08-17"
  },
  {
   "title": "Hacer seguimiento del feedback de Gustavo sobre los ejemplos de web enviados",
@@ -1448,13 +1448,13 @@
   "company": "Auto Show Alicante",
   "date": "2026-08-07",
   "due_hint": null,
-  "status": "en_gestion",
-  "status_evidence": "Manuel envió los ejemplos el 07/08 tras la llamada; el dealer debe elegir entre duplicar su web actual o crear una desde cero (nombre comercial 'Auto Show')",
+  "status": "gestionado",
+  "status_evidence": "17/08: a Gustavo le gustaron; Manuel ya solicitó la web; cuando llegue, Gustavo responderá con cambios",
   "owner": "esperando",
   "priority": "baja",
   "id": "de96ff2af0",
   "created_at": "2026-08-07",
-  "last_seen_activity": "2026-08-07"
+  "last_seen_activity": "2026-08-17"
  },
  {
   "title": "Seguimiento de la verificación de WhatsApp Business con Yago",
@@ -1790,13 +1790,13 @@
   "company": "BAVARIAN AUTO GROUP SL",
   "date": "2026-08-12",
   "due_hint": "cuanto antes (requerimiento regulatorio)",
-  "status": "pendiente",
-  "status_evidence": "14/08: Swan avisa ya de CIERRE de cuenta de Bavarian (fwd de Lina); conseguir la documentación es urgente",
-  "owner": "manuel",
+  "status": "en_gestion",
+  "status_evidence": "17/08: Gabriela volvió de vacaciones, retomó el caso y pidió más información a Swan (Romane), con Manuel y Lucas en copia",
+  "owner": "esperando",
   "priority": "alta",
   "id": "bfa62e5114",
   "created_at": "2026-08-12",
-  "last_seen_activity": "2026-08-14"
+  "last_seen_activity": "2026-08-17"
  },
  {
   "title": "Pasar al equipo la confirmación de mandatos SEPA de Carpentum (Bankinter y BBVA)",
@@ -2135,13 +2135,13 @@
   "company": "Marcial Cars",
   "date": "2026-08-14",
   "due_hint": "hoy — el dealer debe pagar al proveedor hoy sin falta",
-  "status": "en_gestion",
-  "status_evidence": "Manuel llamó a Carlos: los préstamos se metieron ayer y el desembolso llega hoy o mañana a primera hora; línea bloqueada desde marzo",
+  "status": "gestionado",
+  "status_evidence": "El desembolso llegó y Benigno cerró el hilo dando las gracias el 17/08",
   "owner": "manuel",
   "priority": "alta",
   "id": "9aef2a8d26",
   "created_at": "2026-08-14",
-  "last_seen_activity": "2026-08-14"
+  "last_seen_activity": "2026-08-17"
  },
  {
   "title": "Seguimiento: Sportmad no puede publicar en Sumauto (lo gestiona Andrés)",
@@ -2214,5 +2214,146 @@
   "id": "0af672754d",
   "created_at": "2026-08-14",
   "last_seen_activity": "2026-08-14"
+ },
+ {
+  "title": "Llamar a Stefano (Autosprint 2003) por el tema de la suscripción",
+  "quote": "AUTOSPRINT 2003 SL dice que te comuniques al 630 35 61 02 (Stefano) sobre el tema de la suscripcion",
+  "source": "slack",
+  "source_url": "https://infinit-com.slack.com/archives/C0BK6D47X9B/p1786982298447929",
+  "source_label": "Slack equipo CSM · 17 ago",
+  "counterpart": "Alejandra Vivas / Stefano (Autosprint)",
+  "company": "AUTOSPRINT 2003 SL",
+  "date": "2026-08-17",
+  "due_hint": "mañana",
+  "status": "pendiente",
+  "status_evidence": "Autosprint también tiene pendiente la firma de los T&C",
+  "owner": "manuel",
+  "priority": "alta",
+  "id": "13c9e2c18c",
+  "created_at": "2026-08-17",
+  "last_seen_activity": "2026-08-17"
+ },
+ {
+  "title": "Subir la auditoría corregida de Autos Lara: vídeo del XC40 con otro GPS y portadas de los documentos belgas del XC60",
+  "quote": "grabes el vídeo del XC40 con otro GPS y luego lo otro, las portadas de los documentos… si no te deja por la app, me lo pasas por WhatsApp y yo te los subo.",
+  "source": "claap",
+  "source_url": "https://app.claap.io/miguel-cerdan-martinez-x-manuel-cabido-17-08-2026-c-PzY2TjQGaI-2XnbGMM4aVh5",
+  "source_label": "Llamada con Miguel Cerdán (Autos Lara) · 17 ago",
+  "counterpart": "Miguel Cerdán Martínez",
+  "company": "MIGUEL CERDAN MARTINEZ (Autos Lara)",
+  "date": "2026-08-17",
+  "due_hint": "esta semana",
+  "status": "pendiente",
+  "status_evidence": "Miguel lo intenta por la app; si no puede, lo envía por WhatsApp y lo sube Manuel",
+  "owner": "esperando",
+  "priority": "alta",
+  "id": "091aae0435",
+  "created_at": "2026-08-17",
+  "last_seen_activity": "2026-08-17"
+ },
+ {
+  "title": "Reportar el bug del escáner de GPS en las auditorías (lee un código distinto y el manual no deja continuar)",
+  "quote": "yo le doy a escanear el código de barras y me coge un número diferente y lo escribo manual y entonces no me deja seguir",
+  "source": "claap",
+  "source_url": "https://app.claap.io/miguel-cerdan-martinez-x-manuel-cabido-17-08-2026-c-PzY2TjQGaI-2XnbGMM4aVh5",
+  "source_label": "Llamada con Miguel Cerdán (Autos Lara) · 17 ago",
+  "counterpart": "Producto",
+  "company": "MIGUEL CERDAN MARTINEZ (Autos Lara)",
+  "date": "2026-08-17",
+  "due_hint": null,
+  "status": "pendiente",
+  "status_evidence": null,
+  "owner": "manuel",
+  "priority": "media",
+  "action": {
+   "channel_id": "C06B7JGE6GJ",
+   "channel_name": "#product-bugs-report",
+   "draft": "Bug en la app de auditorías (reportado por Autos Lara): al escanear el código de barras de un GPS, el escáner devuelve un código DISTINTO al impreso en el chip, y si el dealer lo escribe a mano el botón «Seguir» no se habilita. Resultado: el vídeo de auditoría queda asociado al GPS equivocado (les pasó con un Volvo XC40 que quedó vinculado al GPS de un Audi). ¿Podéis revisarlo?"
+  },
+  "id": "2b49c75202",
+  "created_at": "2026-08-17",
+  "last_seen_activity": "2026-08-17"
+ },
+ {
+  "title": "Reportar que el asistente de IA de Auto Show ofrece coches que no están en su stock",
+  "quote": "me ofrece un coche que directamente no lo he tenido, o sea, como que se lo inventaba",
+  "source": "claap",
+  "source_url": "https://app.claap.io/manuel-cabido-x-gustavo-guardia-17-08-2026-c-PzY2TjQGaI-oZWkdTOba5ec",
+  "source_label": "Llamada con Gustavo Guardia (Auto Show) · 17 ago",
+  "counterpart": "Responsable del asistente IA",
+  "company": "Auto Show Alicante (GASGOAT SL)",
+  "date": "2026-08-17",
+  "due_hint": null,
+  "status": "pendiente",
+  "status_evidence": "En la llamada de prueba el asistente no ofreció el stock real (importado de coches.net) e inventó un vehículo",
+  "owner": "manuel",
+  "priority": "alta",
+  "action": {
+   "channel_id": "C06B7JGE6GJ",
+   "channel_name": "#product-bugs-report",
+   "draft": "Bug del asistente de voz IA (Auto Show Alicante / GASGOAT SL): en una llamada de prueba el asistente NO ofreció ningún coche del stock real del dealer (importado de coches.net) y llegó a ofrecer un vehículo que el dealer nunca ha tenido. ¿Podéis revisar de dónde está leyendo el stock el asistente?"
+  },
+  "id": "5ed98b56f9",
+  "created_at": "2026-08-17",
+  "last_seen_activity": "2026-08-17"
+ },
+ {
+  "title": "Proponer a producto reutilizar la documentación subida al stock para las auditorías",
+  "quote": "¿la documentación que yo subo aquí al stock me sirve para las auditorías…? — No se puede… voy a comentarlo porque me parece interesante a nivel de producto.",
+  "source": "claap",
+  "source_url": "https://app.claap.io/daniel-lavado-barrera-x-manuel-cabido-17-08-2026-c-PzY2TjQGaI-HWGhDJSL1hRe",
+  "source_label": "Llamada con Daniel Lavado (Danauto) · 17 ago",
+  "counterpart": "Producto",
+  "company": "AUTOMÓVILES DANAUTO",
+  "date": "2026-08-17",
+  "due_hint": null,
+  "status": "pendiente",
+  "status_evidence": null,
+  "owner": "manuel",
+  "priority": "baja",
+  "action": {
+   "channel_id": "C06B7KD9URG",
+   "channel_name": "#product-feedback",
+   "draft": "Petición de Danauto (aplicable a todos): la documentación que el dealer sube al stock/inventario no se puede reutilizar en las auditorías — tiene que volver a escanear y subir los mismos documentos aparte. ¿Se podría permitir seleccionar documentos ya subidos al vehículo al pasar la auditoría?"
+  },
+  "id": "987db4f2f8",
+  "created_at": "2026-08-17",
+  "last_seen_activity": "2026-08-17"
+ },
+ {
+  "title": "Preguntar por la solicitud del número de telefonía de Auto Show y avisar a Gustavo",
+  "quote": "Hace unos 10 días más o menos que lo pedimos… — Déjame preguntar a la persona que se encarga de esto a ver cómo va la solicitud.",
+  "source": "claap",
+  "source_url": "https://app.claap.io/manuel-cabido-x-gustavo-guardia-17-08-2026-c-PzY2TjQGaI-oZWkdTOba5ec",
+  "source_label": "Llamada con Gustavo Guardia (Auto Show) · 17 ago",
+  "counterpart": "Responsable de telefonía / Gustavo",
+  "company": "Auto Show Alicante (GASGOAT SL)",
+  "date": "2026-08-17",
+  "due_hint": "esta semana",
+  "status": "pendiente",
+  "status_evidence": null,
+  "owner": "manuel",
+  "priority": "media",
+  "id": "5613e73bc3",
+  "created_at": "2026-08-17",
+  "last_seen_activity": "2026-08-17"
+ },
+ {
+  "title": "Responder a Winifer si hay que avisar a Lopa del ticket cerrado de Garage Center",
+  "quote": "Cerré este ticket - GARAGE CENTER CONCESIONARIO SL. Solo dicen que se van de vacaciones. ¿Le tenemos que decir a Lopa?",
+  "source": "slack",
+  "source_url": "https://infinit-com.slack.com/archives/C0BK6D47X9B/p1786972505566309",
+  "source_label": "Slack equipo CSM · 17 ago",
+  "counterpart": "Winifer Mercado / Lopamudra",
+  "company": "GARAGE CENTER CONCESIONARIO SL",
+  "date": "2026-08-17",
+  "due_hint": null,
+  "status": "pendiente",
+  "status_evidence": null,
+  "owner": "manuel",
+  "priority": "baja",
+  "id": "9955176e44",
+  "created_at": "2026-08-17",
+  "last_seen_activity": "2026-08-17"
  }
 ]
