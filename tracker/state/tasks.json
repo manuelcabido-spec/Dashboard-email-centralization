@@ -4341,12 +4341,12 @@
   "company": "AUTOMOVILES SANCHEZ ARCOS SL",
   "date": "2026-11-12",
   "created_at": "2026-11-16",
-  "last_seen_activity": "2026-11-12",
-  "due_hint": null,
+  "last_seen_activity": "2026-11-18",
+  "due_hint": "esta semana",
   "status": "en_gestion",
-  "status_evidence": "Plan de hilos publicado por Manuel el 12/11; bloqueado por web nueva y credenciales del dealer",
+  "status_evidence": "Plan de hilos publicado por Manuel el 12/11; bloqueado por web nueva y credenciales del dealer · La primera versión de la web ya se envió a Emiliano el 18/11 (infinit-automoviles-sanchez-arcos-1.vercel.app) — desbloqueado: agendar walkthrough y pedir credenciales",
   "owner": "manuel",
-  "priority": "media",
+  "priority": "alta",
   "id": "440ddb0b03"
  },
  {
@@ -4474,5 +4474,23 @@
   "owner": "manuel",
   "priority": "media",
   "id": "0b05e10fba"
+ },
+ {
+  "title": "BraCar/AutoDraft: actualizar las tarifas nuevas de Sabadell que envió Germán",
+  "quote": "Adjunto tarifas nuevas de Sabadell, les agradeceria actualizarlas",
+  "source": "gmail",
+  "source_url": "https://mail.google.com/mail/?authuser=manuel.cabido@infinit.com#all/thread-f:1882185465624352906",
+  "source_label": "Email de Germán (bra·car) · 18 nov",
+  "counterpart": "Germán Nucette / Antonio Capilla",
+  "company": "Auto Draft SL",
+  "date": "2026-11-18",
+  "created_at": "2026-11-18",
+  "last_seen_activity": "2026-11-18",
+  "due_hint": "esta semana",
+  "status": "pendiente",
+  "status_evidence": "Pedido por email el 18/11 a Manuel y Antonio (producto)",
+  "owner": "manuel",
+  "priority": "media",
+  "id": "2980723584"
  }
 ]
