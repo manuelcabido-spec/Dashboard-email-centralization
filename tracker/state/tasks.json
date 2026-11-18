@@ -4200,7 +4200,7 @@
   "last_seen_activity": "2026-11-17",
   "due_hint": "esta semana",
   "status": "en_gestion",
-  "status_evidence": "8/9 bugs comprometidos ya corregidos y en producción (13/11); falta cuenta de test y respuestas de Carpentum · Karve (Josep) actualizó los endpoints WS el 16/11 y pide volver a probar · Ying volvió a probar el 17/11: las compras de INFINIT IP siguen sin registrarse como intracomunitarias en CarpentumTest5; Manuel reenvió a Ying el estatus de correcciones de contabilidad de Renting Credit",
+  "status_evidence": "8/9 bugs comprometidos ya corregidos y en producción (13/11); falta cuenta de test y respuestas de Carpentum · Karve (Josep) actualizó los endpoints WS el 16/11 y pide volver a probar · Ying volvió a probar el 17/11: las compras de INFINIT IP siguen sin registrarse como intracomunitarias en CarpentumTest5; Manuel reenvió a Ying el estatus de correcciones de contabilidad de Renting Credit · Karve (17/11 noche): el error de intracomunitarias no era del web service sino de configuración — el país no estaba marcado como intracomunitario",
   "owner": "manuel",
   "priority": "alta",
   "id": "5f36b3f074"
@@ -4251,10 +4251,10 @@
   "company": null,
   "date": "2026-11-13",
   "created_at": "2026-11-16",
-  "last_seen_activity": "2026-11-16",
+  "last_seen_activity": "2026-11-17",
   "due_hint": "esta semana",
   "status": "en_gestion",
-  "status_evidence": "La pasada automática de Swan mantiene la base en Notion; estas cuentas vencen entre el 13 y el 22 de noviembre · Pasada 16/11: Grupo Automotos Pilas vence hoy; DELTONA 18/11; UP’CARS 19/11",
+  "status_evidence": "La pasada automática de Swan mantiene la base en Notion; estas cuentas vencen entre el 13 y el 22 de noviembre · Pasada 16/11: Grupo Automotos Pilas vence hoy; DELTONA 18/11; UP’CARS 19/11 · Pasada 17/11: CAR STREET pasa a Final notice (límite 26/11); Jesús Juan Rodríguez Alcolea nuevo Action needed (18/12)",
   "owner": "manuel",
   "priority": "alta",
   "id": "267e497e8b"
