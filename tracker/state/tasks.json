@@ -4197,10 +4197,10 @@
   "company": "CARPENTUM SL (Renting Credit)",
   "date": "2026-11-13",
   "created_at": "2026-11-16",
-  "last_seen_activity": "2026-11-18",
+  "last_seen_activity": "2026-11-19",
   "due_hint": "esta semana",
   "status": "en_gestion",
-  "status_evidence": "8/9 bugs comprometidos ya corregidos y en producción (13/11); falta cuenta de test y respuestas de Carpentum · Karve (Josep) actualizó los endpoints WS el 16/11 y pide volver a probar · Ying volvió a probar el 17/11: las compras de INFINIT IP siguen sin registrarse como intracomunitarias en CarpentumTest5; Manuel reenvió a Ying el estatus de correcciones de contabilidad de Renting Credit · Karve (17/11 noche): el error de intracomunitarias no era del web service sino de configuración — el país no estaba marcado como intracomunitario · Retest 18/11 tras el fix de Luxemburgo: aparece un error nuevo y dos puntos más (Ying sigue con Karve)",
+  "status_evidence": "8/9 bugs comprometidos ya corregidos y en producción (13/11); falta cuenta de test y respuestas de Carpentum · Karve (Josep) actualizó los endpoints WS el 16/11 y pide volver a probar · Ying volvió a probar el 17/11: las compras de INFINIT IP siguen sin registrarse como intracomunitarias en CarpentumTest5; Manuel reenvió a Ying el estatus de correcciones de contabilidad de Renting Credit · Karve (17/11 noche): el error de intracomunitarias no era del web service sino de configuración — el país no estaba marcado como intracomunitario · Retest 18/11 tras el fix de Luxemburgo: aparece un error nuevo y dos puntos más (Ying sigue con Karve) · Karve 19/11: el problema es que las cuentas deben existir o venir vacías en el campo (lógica de negocio pendiente de decidir)",
   "owner": "manuel",
   "priority": "alta",
   "id": "5f36b3f074"
@@ -4254,7 +4254,7 @@
   "last_seen_activity": "2026-11-19",
   "due_hint": "esta semana",
   "status": "en_gestion",
-  "status_evidence": "La pasada automática de Swan mantiene la base en Notion; estas cuentas vencen entre el 13 y el 22 de noviembre · Pasada 16/11: Grupo Automotos Pilas vence hoy; DELTONA 18/11; UP’CARS 19/11 · Pasada 17/11: CAR STREET pasa a Final notice (límite 26/11); Jesús Juan Rodríguez Alcolea nuevo Action needed (18/12) · Reunión con Santa Pola Market Cars (Borja) agendada hoy 19/11 a las 17:00 con Jorge Llerena — dealer en Final notice vencido",
+  "status_evidence": "La pasada automática de Swan mantiene la base en Notion; estas cuentas vencen entre el 13 y el 22 de noviembre · Pasada 16/11: Grupo Automotos Pilas vence hoy; DELTONA 18/11; UP’CARS 19/11 · Pasada 17/11: CAR STREET pasa a Final notice (límite 26/11); Jesús Juan Rodríguez Alcolea nuevo Action needed (18/12) · Reunión con Santa Pola Market Cars (Borja) agendada hoy 19/11 a las 17:00 con Jorge Llerena — dealer en Final notice vencido · Pasada 19/11 tarde: pasan a Final notice EVA FERRER ALCARAZ (25/11), Dream CARS (28/11) y GARCIA MESAS (28/11)",
   "owner": "manuel",
   "priority": "alta",
   "id": "267e497e8b"
@@ -4492,5 +4492,41 @@
   "owner": "manuel",
   "priority": "media",
   "id": "2980723584"
+ },
+ {
+  "title": "Autogrado: seguimiento del alta del teléfono 2FA en Coches.net",
+  "quote": "Solicito que el número de teléfono +34 686 356 917 sea asociado a mi cuenta de Coches.net de (Autogrado) para recibir los códigos 2FA",
+  "source": "gmail",
+  "source_url": "https://mail.google.com/mail/?authuser=manuel.cabido@infinit.com#all/thread-f:1882303928973172604",
+  "source_label": "Email de Rosa Velasco (Autogrado) a coches.net · 19 nov",
+  "counterpart": "Rosa Velasco / Coches.net",
+  "company": "URB. SOLUTIONS GRANADA SL",
+  "date": "2026-11-19",
+  "created_at": "2026-11-19",
+  "last_seen_activity": "2026-11-19",
+  "due_hint": null,
+  "status": "en_gestion",
+  "status_evidence": "Rosa envió la solicitud a coches.net el 19/11 (cc Manuel); vigilar que se active para el multiposting",
+  "owner": "esperando",
+  "priority": "media",
+  "id": "bb6cf6b103"
+ },
+ {
+  "title": "MJ Dealer: revisar la primera versión de la web enviada a Mario",
+  "quote": "hemos creado una primera versión de la web de su concesionario: infinit-mj-dealer-1305.vercel.app",
+  "source": "gmail",
+  "source_url": "https://mail.google.com/mail/?authuser=manuel.cabido@infinit.com#all/thread-f:1882292138208104124",
+  "source_label": "Email de product@ · 19 nov",
+  "counterpart": "Producto / Mario",
+  "company": "MJ DEALER SL",
+  "date": "2026-11-19",
+  "created_at": "2026-11-19",
+  "last_seen_activity": "2026-11-19",
+  "due_hint": null,
+  "status": "pendiente",
+  "status_evidence": "Primera versión enviada al dealer el 19/11",
+  "owner": "manuel",
+  "priority": "media",
+  "id": "43e6defdd2"
  }
 ]
