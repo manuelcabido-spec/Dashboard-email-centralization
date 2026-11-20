@@ -4251,10 +4251,10 @@
   "company": null,
   "date": "2026-11-13",
   "created_at": "2026-11-16",
-  "last_seen_activity": "2026-11-19",
+  "last_seen_activity": "2026-11-20",
   "due_hint": "esta semana",
   "status": "en_gestion",
-  "status_evidence": "La pasada automática de Swan mantiene la base en Notion; estas cuentas vencen entre el 13 y el 22 de noviembre · Pasada 16/11: Grupo Automotos Pilas vence hoy; DELTONA 18/11; UP’CARS 19/11 · Pasada 17/11: CAR STREET pasa a Final notice (límite 26/11); Jesús Juan Rodríguez Alcolea nuevo Action needed (18/12) · Reunión con Santa Pola Market Cars (Borja) agendada hoy 19/11 a las 17:00 con Jorge Llerena — dealer en Final notice vencido · Pasada 19/11 tarde: pasan a Final notice EVA FERRER ALCARAZ (25/11), Dream CARS (28/11) y GARCIA MESAS (28/11)",
+  "status_evidence": "La pasada automática de Swan mantiene la base en Notion; estas cuentas vencen entre el 13 y el 22 de noviembre · Pasada 16/11: Grupo Automotos Pilas vence hoy; DELTONA 18/11; UP’CARS 19/11 · Pasada 17/11: CAR STREET pasa a Final notice (límite 26/11); Jesús Juan Rodríguez Alcolea nuevo Action needed (18/12) · Reunión con Santa Pola Market Cars (Borja) agendada hoy 19/11 a las 17:00 con Jorge Llerena — dealer en Final notice vencido · Pasada 19/11 tarde: pasan a Final notice EVA FERRER ALCARAZ (25/11), Dream CARS (28/11) y GARCIA MESAS (28/11) · Pasada 20/11: vencen ya Alquila tu Vehículo AMB y Yuncar (21/11) y Bta Integral y Europe Automotor (22/11); cuenta nueva MOTOREVO CONCESIONARIO (Carlos, 18/02/2027)",
   "owner": "manuel",
   "priority": "alta",
   "id": "267e497e8b"
@@ -4503,10 +4503,10 @@
   "company": "URB. SOLUTIONS GRANADA SL",
   "date": "2026-11-19",
   "created_at": "2026-11-19",
-  "last_seen_activity": "2026-11-19",
+  "last_seen_activity": "2026-11-20",
   "due_hint": null,
   "status": "en_gestion",
-  "status_evidence": "Rosa envió la solicitud a coches.net el 19/11 (cc Manuel); vigilar que se active para el multiposting",
+  "status_evidence": "Rosa envió la solicitud a coches.net el 19/11 (cc Manuel); vigilar que se active para el multiposting · Coches.net respondió a Rosa el 20/11 (revisar respuesta)",
   "owner": "esperando",
   "priority": "media",
   "id": "bb6cf6b103"
@@ -4528,5 +4528,23 @@
   "owner": "manuel",
   "priority": "media",
   "id": "43e6defdd2"
+ },
+ {
+  "title": "Compostela Car Service: implementación de 'Vehículo a la carta' en compostelacar.com (email de Irene, Agarimo)",
+  "quote": "Implementación de 'Vehículo a la carta' - COMPOSTELACAR.COM",
+  "source": "gmail",
+  "source_url": "https://mail.google.com/mail/?authuser=manuel.cabido@infinit.com#all/1a1f815f9de98da7",
+  "source_label": "Email de Irene (Agarimo Comunicación) · 20 nov",
+  "counterpart": "Irene (Agarimo) / Compostela Car Service",
+  "company": "Compostela Car Service",
+  "date": "2026-11-20",
+  "created_at": "2026-11-20",
+  "last_seen_activity": "2026-11-20",
+  "due_hint": null,
+  "status": "pendiente",
+  "status_evidence": "Email recibido el 20/11 (cc ventas de Compostela); pendiente de respuesta",
+  "owner": "manuel",
+  "priority": "media",
+  "id": "878ab983c8"
  }
 ]
