@@ -4546,5 +4546,23 @@
   "owner": "manuel",
   "priority": "media",
   "id": "878ab983c8"
+ },
+ {
+  "title": "Know Your Supplier: revisar solicitud de GESCOM VEHICULOS para el proveedor YAYO 2000",
+  "quote": "New request from GESCOM VEHICULOS SL for supplier 'YAYO 2000, SL'",
+  "source": "slack",
+  "source_url": "https://admin.app.infinit.cc/automotive/suppliers/",
+  "source_label": "Slack #know-your-supplier-process · 21 nov",
+  "counterpart": "Ines Toumi / Roberto Abad / Nino",
+  "company": "GESCOM VEHICULOS SL",
+  "date": "2026-11-21",
+  "created_at": "2026-11-21",
+  "last_seen_activity": "2026-11-21",
+  "due_hint": "esta semana",
+  "status": "pendiente",
+  "status_evidence": "Solicitud entrada el 21/11 de madrugada; ficheros de soporte en el hilo",
+  "owner": "manuel",
+  "priority": "media",
+  "id": "81d6ccfb24"
  }
 ]
