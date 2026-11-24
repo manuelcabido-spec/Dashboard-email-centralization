@@ -1572,12 +1572,12 @@
   "date": "2026-08-13",
   "due_hint": null,
   "status": "en_gestion",
-  "status_evidence": "Ticket Swan 953302 escalado como urgente el 18/08; el 20/08 Swan pidió confirmar si se trata de un Transfer Execution Notice y espera respuesta de Manuel",
+  "status_evidence": "Ticket Swan 953302 escalado como urgente el 18/08; el 20/08 Swan pidió confirmar si se trata de un Transfer Execution Notice y espera respuesta de Manuel · Swan tramita el cambio de teléfono de Motorevo Concesionario (ticket 1103482, 24/11)",
   "owner": "manuel",
   "priority": "alta",
   "id": "a5e97d1c69",
   "created_at": "2026-08-13",
-  "last_seen_activity": "2026-11-13"
+  "last_seen_activity": "2026-11-24"
  },
  {
   "title": "Pedir a Producto poder añadir ingresos por vehículo (comisión de financiera), no solo gastos",
@@ -1654,12 +1654,12 @@
   "date": "2026-08-13",
   "due_hint": null,
   "status": "en_gestion",
-  "status_evidence": "Alejandra lo estaba compartiendo con Alexis el 13/08; falta que salga el correo",
+  "status_evidence": "Alejandra lo estaba compartiendo con Alexis el 13/08; falta que salga el correo · Swan tramita el cambio de teléfono de Motorevo Concesionario (ticket 1103482, 24/11)",
   "owner": "manuel",
   "priority": "media",
   "id": "74ee132f9c",
   "created_at": "2026-08-13",
-  "last_seen_activity": "2026-08-13"
+  "last_seen_activity": "2026-11-24"
  },
  {
   "title": "Seguimiento: Sportmad no puede publicar en Sumauto (lo gestiona Andrés)",
@@ -4593,10 +4593,10 @@
   "company": "MOTOREVO",
   "date": "2026-11-23",
   "created_at": "2026-11-23",
-  "last_seen_activity": "2026-11-23",
+  "last_seen_activity": "2026-11-24",
   "due_hint": "esta semana",
   "status": "en_gestion",
-  "status_evidence": "Reclamación enviada el 23/11; esperando el pago",
+  "status_evidence": "Reclamación enviada el 23/11; esperando el pago · Swan tramita el cambio de teléfono de Motorevo Concesionario (ticket 1103482, 24/11)",
   "owner": "esperando",
   "priority": "alta",
   "id": "c9cbe80a75"
@@ -4631,9 +4631,9 @@
   "created_at": "2026-11-24",
   "last_seen_activity": "2026-11-24",
   "due_hint": "esta semana",
-  "status": "pendiente",
-  "status_evidence": "Recibido el 24/11; pendiente de respuesta",
-  "owner": "manuel",
+  "status": "en_gestion",
+  "status_evidence": "Recibido el 24/11; pendiente de respuesta · Antonio Capilla (producto) respondió a Riesgos el 24/11 por la tarde",
+  "owner": "esperando",
   "priority": "alta",
   "id": "3f26f3268d"
  },
