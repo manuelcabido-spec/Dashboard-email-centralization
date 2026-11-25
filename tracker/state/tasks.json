@@ -4654,5 +4654,23 @@
   "owner": "manuel",
   "priority": "baja",
   "id": "406bccd794"
+ },
+ {
+  "title": "Know Your Supplier: revisar 7 solicitudes de Albir Exotic Cars (Helpmycar, Proxbuy, Proaype, La Gran Tienda, Framacar, Tuwyncar, Sixt)",
+  "quote": "New request from ALBIR EXOTIC CARS SL for supplier 'HELPMYCAR SL' (+6 proveedores más)",
+  "source": "slack",
+  "source_url": "https://admin.app.infinit.cc/automotive/suppliers/#albir-20261125",
+  "source_label": "Slack #know-your-supplier-process · 25 nov",
+  "counterpart": "Ines Toumi / Roberto Abad / Nino",
+  "company": "ALBIR EXOTIC CARS SL",
+  "date": "2026-11-25",
+  "created_at": "2026-11-25",
+  "last_seen_activity": "2026-11-25",
+  "due_hint": "esta semana",
+  "status": "pendiente",
+  "status_evidence": "7 solicitudes entradas el 25/11 de madrugada; ficheros de soporte en los hilos",
+  "owner": "manuel",
+  "priority": "media",
+  "id": "767e742652"
  }
 ]
