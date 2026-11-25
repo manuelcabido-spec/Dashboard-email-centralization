@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-25T12:01:44Z",
+ "generated_at": "2026-11-25T17:01:54Z",
  "artifact_url": "https://claude.ai/code/artifact/d98e13e2-186e-49da-8f76-fb8ee341084c",
  "last_run": {
   "claap": "2026-11-25",
@@ -113,7 +113,7 @@
   },
   {
    "date": "2026-11-25",
-   "abiertas": 251,
+   "abiertas": 252,
    "gestionadas": 0
   }
  ]
