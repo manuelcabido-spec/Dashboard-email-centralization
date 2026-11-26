@@ -4690,5 +4690,23 @@
   "owner": "manuel",
   "priority": "media",
   "id": "475ab6383f"
+ },
+ {
+  "title": "Premium Cars Sevilla: pasar a Uday los cambios de la web (ya existe premium-cars-sevilla.vercel.app)",
+  "quote": "i have already created this one while ago and pushed if any changes required — do uday know it, he will work on those changes",
+  "source": "slack",
+  "source_url": "https://infinit-com.slack.com/archives/premium-cars-sevilla-enablement/web-20261126",
+  "source_label": "Slack #premium-cars-sevilla-enablement · 26 nov",
+  "counterpart": "Charushila Jagdale / Uday Mourya",
+  "company": "PREMIUM CARS SEVILLA S.L",
+  "date": "2026-11-26",
+  "created_at": "2026-11-26",
+  "last_seen_activity": "2026-11-26",
+  "due_hint": null,
+  "status": "pendiente",
+  "status_evidence": "Charushila pregunta el 26/11 si Uday conoce los cambios requeridos",
+  "owner": "manuel",
+  "priority": "media",
+  "id": "f10f90aec7"
  }
 ]
