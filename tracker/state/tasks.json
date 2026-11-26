@@ -4467,10 +4467,10 @@
   "company": "JESUS JUAN RODRIGUEZ ALCOLEA",
   "date": "2026-11-16",
   "created_at": "2026-11-16",
-  "last_seen_activity": "2026-11-16",
+  "last_seen_activity": "2026-11-26",
   "due_hint": null,
   "status": "pendiente",
-  "status_evidence": "Nota propia del 16/11",
+  "status_evidence": "Nota propia del 16/11 · Reunión Plataforma con José (MRS Cars) aceptada para hoy 26/11 a las 17:15",
   "owner": "manuel",
   "priority": "media",
   "id": "0b05e10fba"
@@ -4726,5 +4726,23 @@
   "owner": "manuel",
   "priority": "alta",
   "id": "3db1d6cb65"
+ },
+ {
+  "title": "Automotor La Mancha: seguimiento de la firma de Términos y Condiciones (enviados a Isidro)",
+  "quote": "Firma de Términos y Condiciones - AUTOMOTOR LA MANCHA SL (a isidro@sfmotor.es, cc Lucas)",
+  "source": "gmail",
+  "source_url": "https://mail.google.com/mail/?authuser=manuel.cabido@infinit.com#all/1a2189896b30ae36",
+  "source_label": "Email enviado por Manuel · 26 nov",
+  "counterpart": "Isidro / Lucas Enríquez",
+  "company": "AUTOMOTOR LA MANCHA SL",
+  "date": "2026-11-26",
+  "created_at": "2026-11-26",
+  "last_seen_activity": "2026-11-26",
+  "due_hint": "esta semana",
+  "status": "en_gestion",
+  "status_evidence": "T&C enviados el 26/11; esperando la firma del dealer",
+  "owner": "esperando",
+  "priority": "media",
+  "id": "c98bb6cdc2"
  }
 ]
