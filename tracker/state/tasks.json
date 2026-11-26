@@ -4251,10 +4251,10 @@
   "company": null,
   "date": "2026-11-13",
   "created_at": "2026-11-16",
-  "last_seen_activity": "2026-11-24",
+  "last_seen_activity": "2026-11-26",
   "due_hint": "esta semana",
   "status": "en_gestion",
-  "status_evidence": "La pasada automática de Swan mantiene la base en Notion; estas cuentas vencen entre el 13 y el 22 de noviembre · Pasada 16/11: Grupo Automotos Pilas vence hoy; DELTONA 18/11; UP’CARS 19/11 · Pasada 17/11: CAR STREET pasa a Final notice (límite 26/11); Jesús Juan Rodríguez Alcolea nuevo Action needed (18/12) · Reunión con Santa Pola Market Cars (Borja) agendada hoy 19/11 a las 17:00 con Jorge Llerena — dealer en Final notice vencido · Pasada 19/11 tarde: pasan a Final notice EVA FERRER ALCARAZ (25/11), Dream CARS (28/11) y GARCIA MESAS (28/11) · Pasada 20/11: vencen ya Alquila tu Vehículo AMB y Yuncar (21/11) y Bta Integral y Europe Automotor (22/11); cuenta nueva MOTOREVO CONCESIONARIO (Carlos, 18/02/2027) · Pasada 20/11 tarde: IRISH BUSINESS pasa a Final notice (29/11); GRADO MOTOR y Automart Benissa nuevo Action needed (21/12) · Pasada 23/11: NUEVA BETICA a Final notice (30/11); esta semana vencen Eva Ferrer (25), Car Street (26), Dream Cars y García Mesas (28), Irish Business (29) · Pasada 23/11 tarde: Auto Reparación Vidal y Autocasión Anan a Final notice (1 dic) · Khawla convocó \"SWAN suspension accounts - deadline\" para el lunes 30/11 a las 18:00",
+  "status_evidence": "La pasada automática de Swan mantiene la base en Notion; estas cuentas vencen entre el 13 y el 22 de noviembre · Pasada 16/11: Grupo Automotos Pilas vence hoy; DELTONA 18/11; UP’CARS 19/11 · Pasada 17/11: CAR STREET pasa a Final notice (límite 26/11); Jesús Juan Rodríguez Alcolea nuevo Action needed (18/12) · Reunión con Santa Pola Market Cars (Borja) agendada hoy 19/11 a las 17:00 con Jorge Llerena — dealer en Final notice vencido · Pasada 19/11 tarde: pasan a Final notice EVA FERRER ALCARAZ (25/11), Dream CARS (28/11) y GARCIA MESAS (28/11) · Pasada 20/11: vencen ya Alquila tu Vehículo AMB y Yuncar (21/11) y Bta Integral y Europe Automotor (22/11); cuenta nueva MOTOREVO CONCESIONARIO (Carlos, 18/02/2027) · Pasada 20/11 tarde: IRISH BUSINESS pasa a Final notice (29/11); GRADO MOTOR y Automart Benissa nuevo Action needed (21/12) · Pasada 23/11: NUEVA BETICA a Final notice (30/11); esta semana vencen Eva Ferrer (25), Car Street (26), Dream Cars y García Mesas (28), Irish Business (29) · Pasada 23/11 tarde: Auto Reparación Vidal y Autocasión Anan a Final notice (1 dic) · Khawla convocó \"SWAN suspension accounts - deadline\" para el lunes 30/11 a las 18:00 · Pasada 26/11: cuenta nueva ICMOTOR (Ivan, 24/02/2027); Car Street vence hoy",
   "owner": "manuel",
   "priority": "alta",
   "id": "267e497e8b"
@@ -4708,5 +4708,23 @@
   "owner": "manuel",
   "priority": "media",
   "id": "f10f90aec7"
+ },
+ {
+  "title": "Classmotor: requisitos pendientes antes del 30 de noviembre (y comprobar si el email rebotó)",
+  "quote": "Importante – VEHICULOS INDUSTRIALES CLASSMOTOR SL: requisitos pendientes antes del 30 de noviembre",
+  "source": "gmail",
+  "source_url": "https://mail.google.com/mail/?authuser=manuel.cabido@infinit.com#all/1a20ec541c6280f8",
+  "source_label": "Email enviado por Manuel · 26 nov",
+  "counterpart": "Javi (Classmotor)",
+  "company": "VEHICULOS INDUSTRIALES CLASSMOTOR SL",
+  "date": "2026-11-26",
+  "created_at": "2026-11-26",
+  "last_seen_activity": "2026-11-26",
+  "due_hint": "2026-11-30",
+  "status": "en_gestion",
+  "status_evidence": "Reclamación enviada el 26/11; OJO: llegó un \"Delivery Status Notification (Failure)\" minutos después — verificar si el correo rebotó y reenviar si hace falta",
+  "owner": "manuel",
+  "priority": "alta",
+  "id": "3db1d6cb65"
  }
 ]
