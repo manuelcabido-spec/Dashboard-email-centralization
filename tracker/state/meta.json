@@ -1,10 +1,10 @@
 {
- "generated_at": "2026-11-27T17:01:55Z",
+ "generated_at": "2026-11-28T06:01:30Z",
  "artifact_url": "https://claude.ai/code/artifact/d98e13e2-186e-49da-8f76-fb8ee341084c",
  "last_run": {
-  "claap": "2026-11-27",
-  "gmail": "2026-11-27",
-  "slack": "2026-11-27"
+  "claap": "2026-11-28",
+  "gmail": "2026-11-28",
+  "slack": "2026-11-28"
  },
  "sources": [
   {
@@ -123,6 +123,11 @@
   },
   {
    "date": "2026-11-27",
+   "abiertas": 258,
+   "gestionadas": 0
+  },
+  {
+   "date": "2026-11-28",
    "abiertas": 258,
    "gestionadas": 0
   }
